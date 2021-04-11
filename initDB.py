@@ -26,11 +26,14 @@ db.session.add(election2)
 db.session.commit()
 
 candidate1 = Candidate(electionID=1, firstName="Tim", lastName="Rolled")
+candidate2 = Candidate(electionID=1, firstName="John", lastName="Harpy")
 db.session.add(candidate1)
+db.session.add(candidate2)
 db.session.commit()
 
 user1.castVote("UWICS", 1)
 user1.castVote("UWICS", 1)
 
+election1.declareWinner()
 
-print('database initialized!')
+print('Database Initialized!')
