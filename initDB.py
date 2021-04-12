@@ -23,7 +23,6 @@ db.session.add(user2)
 db.session.commit()
 
 user1.joinClub("UWICS")
-user1.joinClub("UWICS")
 user2.joinClub("UWICS")
 
 candidate1 = {
@@ -45,10 +44,11 @@ candidate2 = {
 user1.callElection("UWICS", "PRO", [candidate1, candidate2])
 
 user1.castVote("UWICS", 1)
-user1.castVote("UWICS", 2)
+user2.castVote("UWICS", 1)
 
-user2.closeElection(1)
 user1.closeElection(1)
+user2.leaveClub("UWICS")
 user1.openElection(1)
+user1.closeElection(1)
 
 print('Database Initialized!')

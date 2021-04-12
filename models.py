@@ -63,6 +63,31 @@ class User(db.Model):
 
         return False
     
+    def leaveClub(self, clubName):
+        result = db.session.query(Club).filter_by(clubName=clubName).first()
+
+        if not result:
+            print("User attempted to leave a club that did not exist!")
+            return False
+
+        #Determine if user is already in club
+        membership = db.session.query(ClubMember).filter_by(clubID=result.clubID, userID=self.userID).first()
+
+        if not membership:
+            print("User is not a member of this club!")
+            return False
+        
+        try:
+            db.session.delete(membership)
+            db.session.commit()
+            print("User has been removed from club!")
+            return True
+        except:
+            db.session.rollback()
+            print("Unable to remove user from club!")
+
+        return False
+
     def castVote(self, clubName, candidateID):
         electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
         clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
@@ -113,11 +138,15 @@ class Club(db.Model):
         allMembers = db.session.query(ClubMember).filter_by(clubID=self.clubID).all()
         numMembers = len(allMembers)
         memberDetails = [member.toDict() for member in allMembers]
+
+        allClubElections = db.session.query(Election).filter_by(clubID=self.clubID).all()
+        listOfClubElections = [election.toDict() for election in allClubElections]
         return {
             "clubID" : self.clubID,
             "clubName" : self.clubName,
             "numMembers" : numMembers,
-            "members" : memberDetails
+            "members" : memberDetails,
+            "elections" : listOfClubElections
         }
 
 class Election(db.Model):
@@ -154,7 +183,7 @@ class Election(db.Model):
 
         for candidate in electionCandidates:
             votes = db.session.query(ElectionBallot).filter_by(candidateID=candidate.candidateID).all()
-            candidate.numVotes = len(votes)
+            candidate.finalNumVotes = len(votes)
 
             try:
                 db.session.add(candidate)
@@ -174,8 +203,16 @@ class Election(db.Model):
         if not electionCandidates:
             print("No candidates for this election!")
             return False
-
-        voteData = [candidate.numVotes for candidate in electionCandidates]
+        '''
+        for candidate in electionCandidates:
+            try:
+                candidate.finalNumVotes = len(db.session.query(ElectionBallot).filter_by(candidateID=candidate.candidateID).all())
+                db.session.add(candidate)
+                db.session.commit()
+            except:
+                db.session.rollback()
+        '''
+        voteData = [candidate.finalNumVotes for candidate in electionCandidates]
         highestVotes = max(voteData)
         winningNumberOfVotes = [x for x in voteData if x==highestVotes]
 
@@ -189,7 +226,7 @@ class Election(db.Model):
                 db.session.rollback()
         else:
             for candidate in electionCandidates:
-                if candidate.numVotes == highestVotes:
+                if candidate.finalNumVotes == highestVotes:
                     try:
                         self.electionWinner = candidate.firstName + " " + candidate.lastName
                         db.session.add(self)
@@ -204,7 +241,7 @@ class Candidate(db.Model):
     electionID = db.Column(db.Integer, db.ForeignKey('election.electionID'), nullable=False)
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
-    numVotes = db.Column(db.Integer, nullable=False, default=0)
+    finalNumVotes = db.Column(db.Integer, nullable=True, default=None)
     votes = db.relationship('ElectionBallot', backref='ballot')
 
     def toDict(self):
@@ -215,14 +252,15 @@ class Candidate(db.Model):
             "candidateID" : self.candidateID,
             "firstName" : self.firstName,
             "lastName" : self.lastName,
-            "numVotes" : numVotes
+            "numVotes" : numVotes,
+            "finalNumVotes" : self.finalNumVotes
         }
 
 class ClubMember(db.Model):
     memberID = db.Column(db.Integer, primary_key=True)
     clubID = db.Column(db.Integer, db.ForeignKey("club.clubID"), nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey("user.userID"), nullable=False)
-    votesMade = db.relationship('ElectionBallot', backref='voter')
+    votesMade = db.relationship('ElectionBallot', cascade="all, delete", backref='voter')
     hostedElections = db.relationship('Election', backref='election')
     
     def toDict(self):
@@ -299,19 +337,18 @@ class ClubMember(db.Model):
             print("No election found in your elections!")
             return False
         
-        try:
-            election.isOpen = False
-            election.declareWinner()
-            election.electionEndDate = datetime.datetime.now()
-            db.session.add(election)
-            db.session.commit()
-            return True
-        except:
-            db.session.rollback()
-            print("Unable to close election!")
+    #try:
+        election.isOpen = False
+        election.declareWinner()
+        election.electionEndDate = datetime.datetime.now()
+        db.session.add(election)
+        db.session.commit()
+        return True
+    #except:
+        db.session.rollback()
+        print("Unable to close election!")
         
         return False
-
 
     def openElection(self, electionID):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
@@ -334,6 +371,7 @@ class ClubMember(db.Model):
         return True
 
 class ElectionBallot(db.Model):
-    memberID = db.Column(db.Integer, db.ForeignKey("club_member.memberID"), primary_key=True)
-    candidateID = db.Column(db.Integer, db.ForeignKey("candidate.candidateID"), primary_key=True)
-    electionID = db.Column(db.Integer, db.ForeignKey("election.electionID"), primary_key=True)
+    ballotID = db.Column(db.Integer, primary_key=True)
+    memberID = db.Column(db.Integer, db.ForeignKey("club_member.memberID"))
+    candidateID = db.Column(db.Integer, db.ForeignKey("candidate.candidateID"))
+    electionID = db.Column(db.Integer, db.ForeignKey("election.electionID"))
