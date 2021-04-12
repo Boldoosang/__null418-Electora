@@ -7,7 +7,12 @@ os.remove("test.db")
 db.create_all(app=app)
 
 UWICS = Club(clubName="UWICS")
+Rotary = Club(clubName="Rotary")
+RRunners = Club(clubName="Road Runners")
+
 db.session.add(UWICS)
+db.session.add(Rotary)
+db.session.add(RRunners)
 db.session.commit()
 
 user1 = User("bob", "bobpass", "Bob", "Johnson")
@@ -43,5 +48,7 @@ user1.castVote("UWICS", 1)
 user1.castVote("UWICS", 2)
 
 user2.closeElection(1)
+user1.closeElection(1)
+user1.openElection(1)
 
 print('Database Initialized!')

@@ -1,9 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 import datetime
+import uuid
 
 class User(db.Model):
+    #add uuid
     userID = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True)
     password = db.Column(db.String(256), nullable=False)
@@ -102,14 +105,19 @@ class User(db.Model):
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
-    clubName = db.Column(db.String(80), nullable=False)
+    clubName = db.Column(db.String(80), nullable=False, unique=True)
     elections = db.relationship('Election', backref='hostingClub')
     members = db.relationship('ClubMember', backref='club')
 
     def toDict(self):
+        allMembers = db.session.query(ClubMember).filter_by(clubID=self.clubID).all()
+        numMembers = len(allMembers)
+        memberDetails = [member.toDict() for member in allMembers]
         return {
             "clubID" : self.clubID,
-            "clubName" : self.clubName
+            "clubName" : self.clubName,
+            "numMembers" : numMembers,
+            "members" : memberDetails
         }
 
 class Election(db.Model):
@@ -117,21 +125,24 @@ class Election(db.Model):
     clubID = db.Column(db.Integer, db.ForeignKey('club.clubID'), nullable=False)
     position = db.Column(db.String(50), nullable=False)
     memberID = db.Column(db.Integer, db.ForeignKey('club_member.memberID'), nullable=False)
-    #electionEndDate = db.Column(db.DateTime, nullable = True, default)
+    electionEndDate = db.Column(db.DateTime, nullable = True, default = None)
     isOpen = db.Column(db.Boolean, nullable=False, default=True)
     electionWinner = db.Column(db.String(150))
     candidates = db.relationship('Candidate', backref='candidate')
     ballots = db.relationship('ElectionBallot', backref='voteBallots')
 
     def toDict(self):
+        elecCandidates = db.session.query(Candidate).filter_by(electionID=self.electionID).all()
+        listOfElectionCandidates = [candidate.toDict() for candidate in elecCandidates]
         return {
             "electionID" : self.electionID,
             "clubID" : self.clubID,
             "position" : self.position,
-            "electionEndDate" : self.electionEndDate,
-            "memberID" : self.mebmerID,
+            "electionEndDate" : None if not self.electionEndDate else self.electionEndDate.strftime("%d-%m-%Y"),
+            "hostMemberID" : self.memberID,
             "isOpen" : self.isOpen,
-            "electionWinner" : self.electionWinner
+            "electionWinner" : self.electionWinner,
+            "candidates" : listOfElectionCandidates
         }
 
     def tallyVotes(self):
@@ -179,7 +190,14 @@ class Election(db.Model):
         else:
             for candidate in electionCandidates:
                 if candidate.numVotes == highestVotes:
-                    print("Winner is " + candidate.firstName + " " + candidate.lastName)      
+                    try:
+                        self.electionWinner = candidate.firstName + " " + candidate.lastName
+                        db.session.add(self)
+                        db.session.commit()
+                        print("Winner is " + candidate.firstName + " " + candidate.lastName+"!")
+                    except:
+                        db.session.rollback()
+                        print("Error updating winner!")
 
 class Candidate(db.Model):
     candidateID = db.Column(db.Integer, primary_key=True)
@@ -190,11 +208,14 @@ class Candidate(db.Model):
     votes = db.relationship('ElectionBallot', backref='ballot')
 
     def toDict(self):
+        candVotes = db.session.query(ElectionBallot).filter_by(candidateID=self.candidateID).all()
+        numVotes = len(candVotes)
+
         return {
             "candidateID" : self.candidateID,
-            "electionID" : self.electionID,
             "firstName" : self.firstName,
             "lastName" : self.lastName,
+            "numVotes" : numVotes
         }
 
 class ClubMember(db.Model):
@@ -205,10 +226,10 @@ class ClubMember(db.Model):
     hostedElections = db.relationship('Election', backref='election')
     
     def toDict(self):
+        member = db.session.query(User).filter_by(userID=self.userID).first()
         return {
             'memberID': self.memberID,
-            'clubID' : self.clubID,
-            'userID' : self.userID,
+            'username' : member.username
         }
     
     def castVote(self, candidateID):
@@ -281,7 +302,7 @@ class ClubMember(db.Model):
         try:
             election.isOpen = False
             election.declareWinner()
-            #set end date
+            election.electionEndDate = datetime.datetime.now()
             db.session.add(election)
             db.session.commit()
             return True
@@ -302,7 +323,7 @@ class ClubMember(db.Model):
         try:
             election.isOpen = True
             election.electionWinner = None
-            #clear end date
+            election.electionEndDate = None
             db.session.add(election)
             db.session.commit()
         except:

@@ -6,7 +6,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.exc import IntegrityError
 from datetime import timedelta 
 
-from models import db, Club #add application models
+from models import db, Club, Election #add application models
 
 ''' Begin boilerplate code '''
 
@@ -53,6 +53,31 @@ def index():
 @app.route('/app')
 def client_app():
   return app.send_static_file('app.html')
+
+
+@app.route('/api/clubs', methods=["GET"])
+def getClubs():
+  clubs = db.session.query(Club).all()
+  listOfClubs = [club.toDict() for club in clubs]
+  return json.dumps(listOfClubs)
+
+@app.route('/api/clubs/<clubID>', methods=["GET"])
+def getClubsByID(clubID):
+  clubs = db.session.query(Club).filter_by(clubID=clubID).all()
+  listOfClubs = [club.toDict() for club in clubs]
+  return json.dumps(listOfClubs)
+
+@app.route('/api/elections', methods=["GET"])
+def getElections():
+  elections = db.session.query(Election).all()
+  listOfElections = [election.toDict() for election in elections]
+  return json.dumps(listOfElections)
+
+@app.route('/api/elections/<electionID>', methods=["GET"])
+def getElectionsByID(electionID):
+  elections = db.session.query(Election).filter_by(electionID=electionID).all()
+  listOfElections = [election.toDict() for election in elections]
+  return json.dumps(listOfElections)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080, debug=True)
