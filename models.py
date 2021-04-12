@@ -6,8 +6,7 @@ import datetime
 import uuid
 
 class User(db.Model):
-    #add uuid
-    userID = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True)
     password = db.Column(db.String(256), nullable=False)
     firstName = db.Column(db.String(50), nullable=False)
@@ -22,7 +21,7 @@ class User(db.Model):
 
     def toDict(self):
         return {
-            "userID" : self.userID,
+            "id" : self.id,
             "username" : self.username,
             "password" : self.password,
             "firstName" : self.firstName,
@@ -35,24 +34,22 @@ class User(db.Model):
     def checkPassword(self, password):
         return check_password_hash(self.password, password)
 
-    def joinClub(self, clubName):
-        result = db.session.query(Club).filter_by(clubName=clubName).first()
+    def joinClub(self, clubID):
+        result = db.session.query(Club).filter_by(clubID=clubID).first()
 
         if not result:
             print("User attempted to join a club that did not exist!")
             return False
 
         #Determine if user is already in club
-        joined = db.session.query(ClubMember).filter_by(clubID=result.clubID, userID=self.userID).first()
+        joined = db.session.query(ClubMember).filter_by(clubID=result.clubID, id=self.id).first()
 
         if joined:
             print("User is already a member of this club!")
             return False
         
         try:
-            foundClubID = result.clubID 
-            newClubMember = ClubMember(clubID = foundClubID, userID = self.userID)
-
+            newClubMember = ClubMember(clubID = result.clubID , id = self.id)
             db.session.add(newClubMember)
             db.session.commit()
             print("User added to club!")
@@ -63,15 +60,20 @@ class User(db.Model):
 
         return False
     
-    def leaveClub(self, clubName):
-        result = db.session.query(Club).filter_by(clubName=clubName).first()
+    def myClubs(self):
+        myClubs = db.session.query(ClubMember).filter_by(id=self.id).all()
+        listOfMyClubs = [club.toDict() for club in myClubs]
+        return listOfMyClubs
+    
+    def leaveClub(self, clubID):
+        result = db.session.query(Club).filter_by(clubID=clubID).first()
 
         if not result:
             print("User attempted to leave a club that did not exist!")
             return False
 
         #Determine if user is already in club
-        membership = db.session.query(ClubMember).filter_by(clubID=result.clubID, userID=self.userID).first()
+        membership = db.session.query(ClubMember).filter_by(clubID=result.clubID, id=self.id).first()
 
         if not membership:
             print("User is not a member of this club!")
@@ -88,9 +90,8 @@ class User(db.Model):
 
         return False
 
-    def castVote(self, clubName, candidateID):
-        electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+    def castVote(self, clubID, candidateID):
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=clubID, id=self.id).first()
         
         if not clubMembership:
             print("User is not a member of this club!")
@@ -100,7 +101,7 @@ class User(db.Model):
     
     def closeElection(self, electionID):
         electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
         
         if not clubMembership:
             print("User is not a member of this club!")
@@ -110,7 +111,7 @@ class User(db.Model):
 
     def openElection(self, electionID):
         electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
         
         if not clubMembership:
             print("User is not a member of this club!")
@@ -118,15 +119,14 @@ class User(db.Model):
         
         return clubMembership.openElection(electionID=electionID)
     
-    def callElection(self, clubName, position, candidates):
-        electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+    def callElection(self, clubID, position, candidates):
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=clubID, id=self.id).first()
         
         if not clubMembership:
             print("User is not a member of this club!")
             return False
         
-        return clubMembership.callElection(clubName, position, candidates)
+        return clubMembership.callElection(clubID, position, candidates)
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
@@ -144,9 +144,7 @@ class Club(db.Model):
         return {
             "clubID" : self.clubID,
             "clubName" : self.clubName,
-            "numMembers" : numMembers,
-            "members" : memberDetails,
-            "elections" : listOfClubElections
+            "numMembers" : numMembers
         }
 
 class Election(db.Model):
@@ -259,15 +257,18 @@ class Candidate(db.Model):
 class ClubMember(db.Model):
     memberID = db.Column(db.Integer, primary_key=True)
     clubID = db.Column(db.Integer, db.ForeignKey("club.clubID"), nullable=False)
-    userID = db.Column(db.Integer, db.ForeignKey("user.userID"), nullable=False)
+    id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     votesMade = db.relationship('ElectionBallot', cascade="all, delete", backref='voter')
     hostedElections = db.relationship('Election', backref='election')
     
     def toDict(self):
-        member = db.session.query(User).filter_by(userID=self.userID).first()
+        member = db.session.query(User).filter_by(id=self.id).first()
+        myClub = db.session.query(Club).filter_by(clubID=self.clubID).first()
         return {
             'memberID': self.memberID,
-            'username' : member.username
+            'username' : member.username,
+            'clubID' : myClub.clubID,
+            'clubName' : myClub.clubName
         }
     
     def castVote(self, candidateID):
@@ -303,8 +304,8 @@ class ClubMember(db.Model):
             print("User may have already voted!")
             return False
 
-    def callElection(self, clubName, position, candidates):#electionEndDate
-        electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
+    def callElection(self, clubID, position, candidates):#electionEndDate
+        electionClub = db.session.query(Club).filter_by(clubID=clubID).first()
 
         if not electionClub:
             print("No club by this name!")
@@ -337,18 +338,18 @@ class ClubMember(db.Model):
             print("No election found in your elections!")
             return False
         
-    #try:
-        election.isOpen = False
-        election.declareWinner()
-        election.electionEndDate = datetime.datetime.now()
-        db.session.add(election)
-        db.session.commit()
-        return True
-    #except:
-        db.session.rollback()
-        print("Unable to close election!")
-        
-        return False
+        try:
+            election.isOpen = False
+            election.declareWinner()
+            election.electionEndDate = datetime.datetime.now()
+            db.session.add(election)
+            db.session.commit()
+            return True
+        except:
+            db.session.rollback()
+            print("Unable to close election!")
+            
+            return False
 
     def openElection(self, electionID):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
