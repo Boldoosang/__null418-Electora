@@ -18,22 +18,30 @@ db.session.add(user2)
 db.session.commit()
 
 user1.joinClub("UWICS")
+user1.joinClub("UWICS")
+user2.joinClub("UWICS")
 
-election1 = Election(position="Secretary", hostingClub=UWICS)
-election2 = Election(position="President", hostingClub=UWICS)
-db.session.add(election1)
-db.session.add(election2)
-db.session.commit()
+candidate1 = {
+    "firstName" : "Tim",
+    "lastName": "Harpy"
+}
 
-candidate1 = Candidate(electionID=1, firstName="Tim", lastName="Rolled")
-candidate2 = Candidate(electionID=1, firstName="John", lastName="Harpy")
-db.session.add(candidate1)
-db.session.add(candidate2)
-db.session.commit()
+candidate2 = {
+    "firstName" : "John",
+    "lastName": "Rolled"
+}
+
+#candidate1 = Candidate(electionID=1, firstName="Tim", lastName="Rolled")
+#candidate2 = Candidate(electionID=1, firstName="John", lastName="Harpy")
+#db.session.add(candidate1)
+#db.session.add(candidate2)
+#db.session.commit()
+
+user1.callElection("UWICS", "PRO", [candidate1, candidate2])
 
 user1.castVote("UWICS", 1)
-user1.castVote("UWICS", 1)
+user1.castVote("UWICS", 2)
 
-election1.declareWinner()
+user2.closeElection(1)
 
 print('Database Initialized!')

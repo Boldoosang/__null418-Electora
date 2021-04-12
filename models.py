@@ -38,6 +38,13 @@ class User(db.Model):
         if not result:
             print("User attempted to join a club that did not exist!")
             return False
+
+        #Determine if user is already in club
+        joined = db.session.query(ClubMember).filter_by(clubID=result.clubID, userID=self.userID).first()
+
+        if joined:
+            print("User is already a member of this club!")
+            return False
         
         try:
             foundClubID = result.clubID 
@@ -62,8 +69,36 @@ class User(db.Model):
             return False
         
         return clubMembership.castVote(candidateID)
+    
+    def closeElection(self, electionID):
+        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+        
+        if not clubMembership:
+            print("User is not a member of this club!")
+            return False
+        
+        return clubMembership.closeElection(electionID=electionID)
 
-
+    def openElection(self, electionID):
+        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+        
+        if not clubMembership:
+            print("User is not a member of this club!")
+            return False
+        
+        return clubMembership.openElection(electionID=electionID)
+    
+    def callElection(self, clubName, position, candidates):
+        electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, userID=self.userID).first()
+        
+        if not clubMembership:
+            print("User is not a member of this club!")
+            return False
+        
+        return clubMembership.callElection(clubName, position, candidates)
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
@@ -81,9 +116,12 @@ class Election(db.Model):
     electionID = db.Column(db.Integer, primary_key=True)
     clubID = db.Column(db.Integer, db.ForeignKey('club.clubID'), nullable=False)
     position = db.Column(db.String(50), nullable=False)
-    #electionEndDate = db.Column(db.DateTime, nullable=False, default="")
+    memberID = db.Column(db.Integer, db.ForeignKey('club_member.memberID'), nullable=False)
+    #electionEndDate = db.Column(db.DateTime, nullable = True, default)
+    isOpen = db.Column(db.Boolean, nullable=False, default=True)
     electionWinner = db.Column(db.String(150))
     candidates = db.relationship('Candidate', backref='candidate')
+    ballots = db.relationship('ElectionBallot', backref='voteBallots')
 
     def toDict(self):
         return {
@@ -91,6 +129,8 @@ class Election(db.Model):
             "clubID" : self.clubID,
             "position" : self.position,
             "electionEndDate" : self.electionEndDate,
+            "memberID" : self.mebmerID,
+            "isOpen" : self.isOpen,
             "electionWinner" : self.electionWinner
         }
 
@@ -125,10 +165,10 @@ class Election(db.Model):
             return False
 
         voteData = [candidate.numVotes for candidate in electionCandidates]
-        print(voteData)
+        highestVotes = max(voteData)
+        winningNumberOfVotes = [x for x in voteData if x==highestVotes]
 
-        if True:
-            #ElectionCandidates (contains duplicates):
+        if len(voteData) != len(set(voteData)):
             print("There has been a tie!")
             try:
                 self.electionWinner = "Tie"
@@ -137,9 +177,9 @@ class Election(db.Model):
             except:
                 db.session.rollback()
         else:
-            pass
-
-        
+            for candidate in electionCandidates:
+                if candidate.numVotes == highestVotes:
+                    print("Winner is " + candidate.firstName + " " + candidate.lastName)      
 
 class Candidate(db.Model):
     candidateID = db.Column(db.Integer, primary_key=True)
@@ -157,43 +197,122 @@ class Candidate(db.Model):
             "lastName" : self.lastName,
         }
 
-
 class ClubMember(db.Model):
     memberID = db.Column(db.Integer, primary_key=True)
     clubID = db.Column(db.Integer, db.ForeignKey("club.clubID"), nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey("user.userID"), nullable=False)
     votesMade = db.relationship('ElectionBallot', backref='voter')
+    hostedElections = db.relationship('Election', backref='election')
     
     def toDict(self):
         return {
             'memberID': self.memberID,
-            #complete
+            'clubID' : self.clubID,
+            'userID' : self.userID,
         }
     
     def castVote(self, candidateID):
-        #Do check to ensure that the election end date has not passed.
         candidate = db.session.query(Candidate).filter_by(candidateID=candidateID).first()
 
         if not candidate:
-            print("User attempted to join a club that did not exist!")
+            print("User attempted to vote for a candidate that did not exist!")
+            return False
+
+        election = db.session.query(Election).filter_by(electionID=candidate.electionID, isOpen=True).first()
+
+        if not election:
+            print("Sorry, the election has closed!")
             return False
         
         try:
-            ballot = ElectionBallot(memberID=self.memberID, candidateID=candidateID)
+            election = db.session.query(ElectionBallot).filter_by(electionID=candidate.electionID, memberID=self.memberID).first()
+            if election:
+                try:
+                    db.session.delete(election)
+                    db.session.commit()
+                    print("Changing vote!")
+                except:
+                    db.session.rollback()
+
+            ballot = ElectionBallot(memberID=self.memberID, candidateID=candidateID, electionID=candidate.electionID)
             db.session.add(ballot)
             db.session.commit()
+            print("Successfully voted for candidate!")
             return True
         except:
             db.session.rollback()
             print("User may have already voted!")
             return False
 
+    def callElection(self, clubName, position, candidates):#electionEndDate
+        electionClub = db.session.query(Club).filter_by(clubName=clubName).first()
 
-    def callElection(self, clubName):
-        pass
+        if not electionClub:
+            print("No club by this name!")
+            return False
 
+        try:
+            newElection = Election(clubID=electionClub.clubID, memberID=self.memberID, position=position)
+            db.session.add(newElection)
+            db.session.commit()
+            for candidate in candidates:
+                try:
+                    newCandidate = Candidate(firstName = candidate["firstName"], lastName= candidate["lastName"], electionID=newElection.electionID)
+                    db.session.add(newCandidate)
+                    db.session.commit()
+                    print("Successfully added " + candidate["firstName"] + " " + candidate["lastName"] + " to database!")
+                except:
+                    db.session.rollback()
+                    print("Unable to add " + candidate["firstName"] + " " + candidate["lastName"] + " to database!")
+        except:
+            print("Unable to add election to database!")
+            db.session.rollback()
+            return False
+        
+        return True
+    
+    def closeElection(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your elections!")
+            return False
+        
+        try:
+            election.isOpen = False
+            election.declareWinner()
+            #set end date
+            db.session.add(election)
+            db.session.commit()
+            return True
+        except:
+            db.session.rollback()
+            print("Unable to close election!")
+        
+        return False
+
+
+    def openElection(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your elections!")
+            return False
+        
+        try:
+            election.isOpen = True
+            election.electionWinner = None
+            #clear end date
+            db.session.add(election)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print("Unable to open election!")
+            return False
+        
+        return True
 
 class ElectionBallot(db.Model):
-    #ballotID = db.Column(db.Integer, primary_key=True)
     memberID = db.Column(db.Integer, db.ForeignKey("club_member.memberID"), primary_key=True)
     candidateID = db.Column(db.Integer, db.ForeignKey("candidate.candidateID"), primary_key=True)
+    electionID = db.Column(db.Integer, db.ForeignKey("election.electionID"), primary_key=True)
