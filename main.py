@@ -127,10 +127,16 @@ def identify():
 
 #Remove before production
 @app.route('/debug/elections', methods=["GET"])
-def getElections():
+def getElectionsDebug():
   elections = db.session.query(Election).all()
   listOfElections = [election.toDict() for election in elections]
   return json.dumps(listOfElections)
+
+@app.route('/api/elections', methods=["GET"])
+@jwt_required()
+def getMyElections():
+  myElections = current_identity.myElections()
+  return json.dumps(myElections)
 
 @app.route('/api/elections/<electionID>', methods=["GET"])
 def getElectionsByID(electionID):
@@ -165,11 +171,17 @@ def updateElection(electionID):
   
   if "isOpen" in updateDetails:
     if updateDetails["isOpen"] == True:
-      current_identity.openElection(electionID)
-      return json.dumps({"message" : "Election reopened!"})
+      result = current_identity.openElection(electionID)
+      if result:
+        return json.dumps({"message" : "Election opened!"})
+      else :
+        return json.dumps({"message" : "You do not have permission to open this election!"})
     if updateDetails["isOpen"] == False:
-      current_identity.closeElection(electionID)
-      return json.dumps({"message" : "Election closed!"})
+      result = current_identity.closeElection(electionID)
+      if result:
+        return json.dumps({"message" : "Election closed!"})
+      else :
+        return json.dumps({"message" : "You do not have permission to close this election!"})
 
 @app.route('/api/elections/<electionID>', methods=["DELETE"])
 @jwt_required()
@@ -186,12 +198,11 @@ def deleteElection(electionID):
     return json.dumps({"message" : "Unable to delete election!"})
     
 
-@app.route('/api/elections', methods=["GET"])
+@app.route('/api/myElections', methods=["GET"])
 @jwt_required()
-def getMyElections():
-  myElections = current_identity.myElections()
+def getMyManagingElections():
+  myElections = current_identity.myManagingElections()
   return json.dumps(myElections)
-
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080, debug=True)

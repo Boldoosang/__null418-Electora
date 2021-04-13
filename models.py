@@ -65,6 +65,15 @@ class User(db.Model):
         listOfMyClubs = [club.toDict() for club in myClubs]
         return listOfMyClubs
     
+    def myManagingElections(self):
+        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
+        
+        if not memberships:
+            return None
+
+        listOfMyElections = [membership.myManagingElections() for membership in memberships]
+        return listOfMyElections
+
     def myElections(self):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
@@ -418,8 +427,16 @@ class ClubMember(db.Model):
         
         return True
 
-    def myElections(self):
+    def myManagingElections(self):
         myElections = db.session.query(Election).filter_by(memberID=self.memberID).all()
+        if not myElections:
+            return None
+
+        listOfMyElections = [election.toDict() for election in myElections]
+        return listOfMyElections
+
+    def myElections(self):
+        myElections = db.session.query(Election).filter_by(clubID=self.clubID).all()
         if not myElections:
             return None
 
@@ -444,6 +461,8 @@ class ClubMember(db.Model):
             print("Unable to delete election!")
             
             return False
+
+    
 
 class ElectionBallot(db.Model):
     ballotID = db.Column(db.Integer, primary_key=True)
