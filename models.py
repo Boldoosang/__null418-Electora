@@ -11,7 +11,7 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
-    clubMembers = db.relationship('ClubMember', backref='membership')
+    clubMembers = db.relationship('ClubMember', cascade="all, delete", backref='membership')
 
     def __init__(self, username, password, firstName, lastName):
         self.username = username
@@ -65,6 +65,15 @@ class User(db.Model):
         listOfMyClubs = [club.toDict() for club in myClubs]
         return listOfMyClubs
     
+    def myElections(self):
+        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
+        
+        if not memberships:
+            return None
+
+        listOfMyElections = [membership.myElections() for membership in memberships]
+        return listOfMyElections
+
     def leaveClub(self, clubID):
         result = db.session.query(Club).filter_by(clubID=clubID).first()
 
@@ -80,6 +89,18 @@ class User(db.Model):
             return False
         
         try:
+            #delete active elections when host leaves
+            activeElections = db.session.query(Election).filter_by(memberID=membership.memberID, isOpen=True).all()
+            for election in activeElections:
+                try:
+                    db.session.delete(election)
+                    db.session.commit()
+                    print("Cleaning up user's active elections!")
+                except:
+                    db.session.rollback()
+                    print("Error cleaning up user's active elections!")
+
+            #leave finished elections
             db.session.delete(membership)
             db.session.commit()
             print("User has been removed from club!")
@@ -101,6 +122,9 @@ class User(db.Model):
     
     def closeElection(self, electionID):
         electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+        if not electionClub:
+            print("No election found!")
+            return False
         clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
         
         if not clubMembership:
@@ -111,6 +135,9 @@ class User(db.Model):
 
     def openElection(self, electionID):
         electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+        if not electionClub:
+            print("No election found!")
+            return False
         clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
         
         if not clubMembership:
@@ -127,6 +154,19 @@ class User(db.Model):
             return False
         
         return clubMembership.callElection(clubID, position, candidates)
+
+    def deleteElection(self, electionID):
+        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+        if not electionClub:
+            print("No election found!")
+            return False
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
+        
+        if not clubMembership:
+            print("User is not a member of this club!")
+            return False
+        
+        return clubMembership.deleteElection(electionID=electionID)
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
@@ -151,7 +191,7 @@ class Election(db.Model):
     electionID = db.Column(db.Integer, primary_key=True)
     clubID = db.Column(db.Integer, db.ForeignKey('club.clubID'), nullable=False)
     position = db.Column(db.String(50), nullable=False)
-    memberID = db.Column(db.Integer, db.ForeignKey('club_member.memberID'), nullable=False)
+    memberID = db.Column(db.Integer, db.ForeignKey('club_member.memberID'), nullable=True)
     electionEndDate = db.Column(db.DateTime, nullable = True, default = None)
     isOpen = db.Column(db.Boolean, nullable=False, default=True)
     electionWinner = db.Column(db.String(150))
@@ -161,9 +201,11 @@ class Election(db.Model):
     def toDict(self):
         elecCandidates = db.session.query(Candidate).filter_by(electionID=self.electionID).all()
         listOfElectionCandidates = [candidate.toDict() for candidate in elecCandidates]
+        club = db.session.query(Club).filter_by(clubID=self.clubID).first()
         return {
             "electionID" : self.electionID,
             "clubID" : self.clubID,
+            "clubName" : club.clubName,
             "position" : self.position,
             "electionEndDate" : None if not self.electionEndDate else self.electionEndDate.strftime("%d-%m-%Y"),
             "hostMemberID" : self.memberID,
@@ -236,7 +278,7 @@ class Election(db.Model):
 
 class Candidate(db.Model):
     candidateID = db.Column(db.Integer, primary_key=True)
-    electionID = db.Column(db.Integer, db.ForeignKey('election.electionID'), nullable=False)
+    electionID = db.Column(db.Integer, db.ForeignKey('election.electionID'), nullable=True)
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
     finalNumVotes = db.Column(db.Integer, nullable=True, default=None)
@@ -312,6 +354,11 @@ class ClubMember(db.Model):
             return False
 
         try:
+            duplicateActiveElection = db.session.query(Election).filter_by(position=position, clubID=electionClub.clubID, isOpen=True).all()
+
+            if duplicateActiveElection:
+                return False
+
             newElection = Election(clubID=electionClub.clubID, memberID=self.memberID, position=position)
             db.session.add(newElection)
             db.session.commit()
@@ -335,7 +382,7 @@ class ClubMember(db.Model):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
 
         if not election:
-            print("No election found in your elections!")
+            print("No election found in your managing elections!")
             return False
         
         try:
@@ -355,7 +402,7 @@ class ClubMember(db.Model):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
 
         if not election:
-            print("No election found in your elections!")
+            print("No election found in your managing elections!")
             return False
         
         try:
@@ -370,6 +417,33 @@ class ClubMember(db.Model):
             return False
         
         return True
+
+    def myElections(self):
+        myElections = db.session.query(Election).filter_by(memberID=self.memberID).all()
+        if not myElections:
+            return None
+
+        listOfMyElections = [election.toDict() for election in myElections]
+        return listOfMyElections
+
+    def deleteElection(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your managing elections!")
+            return False
+        
+        try:
+            db.session.delete(election)
+            db.session.commit()
+            print("Election deleted!")
+
+            return True
+        except:
+            db.session.rollback()
+            print("Unable to delete election!")
+            
+            return False
 
 class ElectionBallot(db.Model):
     ballotID = db.Column(db.Integer, primary_key=True)

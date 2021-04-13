@@ -57,7 +57,6 @@ def index():
 def client_app():
   return app.send_static_file('app.html')
 
-
 @app.route('/api/clubs', methods=["GET"])
 def getClubs():
   clubs = db.session.query(Club).all()
@@ -66,21 +65,42 @@ def getClubs():
 
 @app.route('/api/clubs/<clubID>', methods=["GET"])
 def getClubsByID(clubID):
-  clubs = db.session.query(Club).filter_by(clubID=clubID).all()
-  listOfClubs = [club.toDict() for club in clubs]
-  return json.dumps(listOfClubs)
+  foundClub = db.session.query(Club).filter_by(clubID=clubID).first()
+  if not foundClub:
+    return None
+  return json.dumps(foundClub.toDict())
 
-@app.route('/api/elections', methods=["GET"])
-def getElections():
-  elections = db.session.query(Election).all()
-  listOfElections = [election.toDict() for election in elections]
-  return json.dumps(listOfElections)
+@app.route('/api/clubs/<clubID>', methods=["POST"])
+@jwt_required()
+def joinClub(clubID):
+  if not clubID:
+    return json.dumps({"message" : "No supplied club ID!"})
 
-@app.route('/api/elections/<electionID>', methods=["GET"])
-def getElectionsByID(electionID):
-  elections = db.session.query(Election).filter_by(electionID=electionID).all()
-  listOfElections = [election.toDict() for election in elections]
-  return json.dumps(listOfElections)
+  response = current_identity.joinClub(clubID)
+
+  if response:
+    return json.dumps({"message" : "Club joined!"})
+  else:
+    return json.dumps({"message" : "User is already a member of this club!"})
+
+@app.route('/api/myClubs', methods=["GET"])
+@jwt_required()
+def getMyClubs():
+  myClubs = current_identity.myClubs()
+  return json.dumps(myClubs)
+
+@app.route('/api/myClubs/<clubID>', methods=["DELETE"])
+@jwt_required()
+def leaveClub(clubID):
+  if not clubID:
+    return json.dumps({"message" : "No supplied club ID!"})
+
+  response = current_identity.leaveClub(clubID)
+
+  if response:
+    return json.dumps({"message" : "Club left!"})
+  else:
+    return json.dumps({"message" : "User is not a member of this club!"})
 
 @app.route('/register', methods=["POST"])
 def register():
@@ -102,55 +122,76 @@ def register():
 
 @app.route('/identify', methods=["GET"])
 @jwt_required()
-def test():
+def identify():
   return json.dumps(current_identity.username)
 
-@app.route('/api/myclubs', methods=["GET"])
+#Remove before production
+@app.route('/debug/elections', methods=["GET"])
+def getElections():
+  elections = db.session.query(Election).all()
+  listOfElections = [election.toDict() for election in elections]
+  return json.dumps(listOfElections)
+
+@app.route('/api/elections/<electionID>', methods=["GET"])
+def getElectionsByID(electionID):
+  elections = db.session.query(Election).filter_by(electionID=electionID).all()
+  listOfElections = [election.toDict() for election in elections]
+  return json.dumps(listOfElections)
+
+@app.route('/api/elections', methods=["POST"])
 @jwt_required()
-def getMyClubs():
-  myClubs = current_identity.myClubs()
-  return json.dumps(myClubs)
-
-@app.route('/api/clubs/<clubID>', methods=["POST"])
-@jwt_required()
-def joinClub(clubID):
-  if not clubID:
-    return json.dumps({"message" : "No supplied club ID!"})
-
-  response = current_identity.joinClub(clubID)
-
-  if response:
-    return json.dumps({"message" : "Club joined!"})
-  else:
-    return json.dumps({"message" : "User is already a member of this club!"})
-
-@app.route('/api/elections/<clubID>', methods=["POST"])
-@jwt_required()
-def createElection(clubID):
+def createElection():
   electionDetails = request.get_json()
-  if not clubID:
-    return json.dumps({"message" : "No supplied club ID!"})
+
+  if not electionDetails or not electionDetails["clubID"] or not electionDetails["position"] or not electionDetails["candidates"]:
+    return json.dumps({"message" : "Not enough information provided!"})
 
   
-  response = current_identity.joinClub(clubID)
+  response = current_identity.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
 
   if response:
-    return json.dumps({"message" : "Club joined!"})
+    return json.dumps({"message" : "Election started!"})
   else:
-    return json.dumps({"message" : "User is already a member of this club!"})
+    return json.dumps({"message" : "An active already exists for that position, invalid candidate information provided, or you are not a member of this club!"})
 
-@app.route('/api/myclubs/<clubID>', methods=["DELETE"])
+@app.route('/api/elections/<electionID>', methods=["PUT"])
 @jwt_required()
-def leaveClub(clubID):
-  if not clubID:
-    return json.dumps({"message" : "No supplied club ID!"})
+def updateElection(electionID):
+  updateDetails = request.get_json()
 
-  response = current_identity.leaveClub(clubID)
+  #Add ability to update candidates
+  if not updateDetails or not electionID:
+    return json.dumps({"message" : "Not enough information provided!"})
+  
+  if "isOpen" in updateDetails:
+    if updateDetails["isOpen"] == True:
+      current_identity.openElection(electionID)
+      return json.dumps({"message" : "Election reopened!"})
+    if updateDetails["isOpen"] == False:
+      current_identity.closeElection(electionID)
+      return json.dumps({"message" : "Election closed!"})
+
+@app.route('/api/elections/<electionID>', methods=["DELETE"])
+@jwt_required()
+def deleteElection(electionID):
+  #Add ability to update candidates
+  if not electionID:
+    return json.dumps({"message" : "Not election ID provided!"})
+  
+  response = current_identity.deleteElection(electionID)
 
   if response:
-    return json.dumps({"message" : "Club left!"})
+    return json.dumps({"message" : "Election deleted!"})
   else:
-    return json.dumps({"message" : "User is not a member of this club!"})
+    return json.dumps({"message" : "Unable to delete election!"})
+    
+
+@app.route('/api/elections', methods=["GET"])
+@jwt_required()
+def getMyElections():
+  myElections = current_identity.myElections()
+  return json.dumps(myElections)
+
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080, debug=True)
