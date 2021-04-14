@@ -7,9 +7,172 @@
     <title>Electora</title>
      <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+
 </head>
 <body>
+  <title>Test</title>
 
+  <div class="container" id="signup">
+    <form id="signUpForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" class="form-control" id="regUsername" required>
+      </div>
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" class="form-control" id="firstName" required>
+      </div>
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" class="form-control" id="lastName" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="regPassword" required>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="confirmPassword" class="form-control" id="confirmPassword" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+  <!--
+  Button trigger modal
+  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+    Launch demo modal
+  </button>
+  Modal
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  -->
+
+  <div class="container" id="login">
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" class="form-control" id="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+  <script>
+    const server = "http://localhost:8080"
+
+    async function sendRequest(url, method, data){
+      try {
+        let token = window.localStorage.getItem('access_token')
+
+        let options = {
+          "method" : method,
+          "headers" : {
+            "Content-Type" : "application/json",
+            "Authorization" : `JWT ${token}`
+          }
+        }
+
+        if(data)
+          options.body = JSON.stringify(data)
+
+        let response = await fetch(url, options)
+
+        let result = await response.json()
+
+        return result
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    async function login(event){
+      event.preventDefault();
+
+      let form = event.target
+      let fields = event.target.elements
+
+      let data = {
+        "username" : fields["username"].value,
+        "password" : fields["password"].value,
+      }
+
+      console.log(data)
+
+      form.reset()
+
+      let result = await sendRequest(`${server}/auth`, "POST", data)
+      console.log(result)
+      if("error" in result) {
+        console.log("Login failed! " + result["error"])
+      } else {
+        console.log("Logged in successfully!")
+        window.localStorage.setItem('access_token', result['access_token']);
+      }
+
+      let test = await sendRequest(`${server}/identify`, "GET")
+      console.log(test)
+    }
+
+    async function signUp(event){
+      event.preventDefault();
+
+      let form = event.target
+      let fields = event.target.elements
+
+      let data = {
+        "username" : fields["regUsername"].value,
+        "firstName" : fields["firstName"].value,
+        "lastName" : fields["lastName"].value,
+        "password" : fields["regPassword"].value,
+        "confirmPassword" : fields["confirmPassword"].value
+      }
+
+      console.log(data)
+
+      form.reset()
+
+      let result = await sendRequest(`${server}/register`, "POST", data)
+
+      if("error" in result) {
+        console.log("Sign up failed! " + result["error"])
+      } else {
+        console.log("Signed up successfully!")
+      }
+    }
+
+    function logout(){
+      window.localStorage.removeItem('access_token');
+      //Redirect?
+    }
+
+    document.forms["signUpForm"].addEventListener("submit", signUp)
+    document.forms["loginForm"].addEventListener("submit", login)
+
+  </script>
 </body>
 </html>

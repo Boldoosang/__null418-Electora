@@ -6,13 +6,14 @@ os.remove("test.db")
 
 db.create_all(app=app)
 
-UWICS = Club(clubName="UWICS")
-Rotary = Club(clubName="Rotary")
-RRunners = Club(clubName="Road Runners")
 
-db.session.add(UWICS)
-db.session.add(Rotary)
-db.session.add(RRunners)
+db.session.add(Club(clubName="UWI Computing Society"))
+db.session.add(Club(clubName="UWI Actuarial Science Club"))
+db.session.add(Club(clubName="UWI Biological Society"))
+db.session.add(Club(clubName="UWI Leadership Council"))
+db.session.add(Club(clubName="UWI Art Society"))
+
+
 db.session.commit()
 '''
 user1 = User("bobtest", "bobpass", "Bob", "Johnson")

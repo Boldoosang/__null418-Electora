@@ -24,7 +24,7 @@ def create_app():
   #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:\\Users\\jbald\Desktop\\__null418-ElectoraV2\\test.db'
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
   app.config['SECRET_KEY'] = "MYSECRET"
-  app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7) # uncomment if using flsk jwt
+  app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7)
   CORS(app)
 #   login_manager.init_app(app) # uncomment if using flask login
   db.init_app(app)
@@ -109,11 +109,14 @@ def leaveClub(clubID):
 @app.route('/register', methods=["POST"])
 def register():
   regDetails = request.get_json()
-  if not regDetails["username"] and not regDetails["password"] and not regDetails["firstName"] and not regDetails["lastName"]:
-    return json.dumps({"message" : "Please ensure all the data ie entered for registration"})
+  if not regDetails["username"] and not regDetails["password"] and not regDetails["firstName"] and not regDetails["confirmPassword"] and not regDetails["lastName"]:
+    return json.dumps({"error" : "Please ensure all the data ie entered for registration"})
   
   if len(regDetails["password"]) <= 6:
-    return json.dumps({"message" : "Password too short!"})
+    return json.dumps({"error" : "Password too short!"})
+
+  if regDetails["password"] != regDetails["confirmPassword"]:
+    return json.dumps({"error" : "Passwords do not match!"})
 
   try:
     newUser = User(regDetails["username"], regDetails["password"], regDetails["firstName"], regDetails["lastName"])
@@ -122,7 +125,7 @@ def register():
     return json.dumps({"message" : "Successfully signed up!"})
   except:
     db.session.rollback()
-    return json.dumps({"message" : "Error registering user! User may already exist!"})
+    return json.dumps({"error" : "Error registering user! User may already exist!"})
 
 @app.route('/identify', methods=["GET"])
 @jwt_required()
