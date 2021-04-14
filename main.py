@@ -158,13 +158,21 @@ def getElectionByID(electionID):
   election = current_identity.viewElection(electionID)
   return json.dumps(election)
 
+@app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["POST"])
+@jwt_required()
+def voteForCandidate(electionID, candidateID):
+  if current_identity.castVote(electionID, candidateID):
+    return json.dumps({"message" : "Vote casted!"})
+  else:
+    return json.dumps({"error" : "Unable to cast vote!"})
+
 @app.route('/api/elections', methods=["POST"])
 @jwt_required()
 def createElection():
   electionDetails = request.get_json()
 
   if not electionDetails or not electionDetails["clubID"] or not electionDetails["position"] or not electionDetails["candidates"]:
-    return json.dumps({"message" : "Not enough information provided!"})
+    return json.dumps({"error" : "Not enough information provided!"})
 
   response = current_identity.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
 

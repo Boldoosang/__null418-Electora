@@ -136,7 +136,7 @@ async function displayClubs(clubs){
         for(club of clubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
                               <div class="card" style="width: 100%;">
-                                <img class="card-img-top" src="${club["clubImage"]}" alt="Card image cap">
+                                <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
                                   <h5 class="card-title">${club["clubName"]}</h5>
                                   <p class="card-text">${club["clubDescription"]}</p>
@@ -167,8 +167,8 @@ async function displayMyClubs(myClubs){
     if(myClubs.length > 0){
         for(myClub of myClubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
-                              <div class="card" style="width: 100%;">
-                                <img class="card-img-top" src="${myClub["clubImage"]}" alt="Card image cap">
+                              <div class="card">
+                                <img class="card-img-top" src="${myClub["clubImage"]}">
                                 <div class="card-body">
                                   <h5 class="card-title">${myClub["clubName"]}</h5>
                                   <p class="card-text">${myClub["clubDescription"]}</p>
@@ -196,6 +196,68 @@ async function getAllMyClubs(){
     displayMyClubs(myClubs)
 }
 
+
+async function displayMyActiveElections(myElections){
+    activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
+    let listOfElections = ""
+    if(myElections.length > 0){
+        for(clubElections of myElections){
+            if(clubElections != null){
+                listOfCandidates = ""
+                for(clubElection of clubElections){
+                    for(candidate of clubElection.candidates)
+                        listOfCandidates += `<div class="col-sm-6 mt-3">
+                                                <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                    <p class="card-text">${candidate["numVotes"]}</p>
+                                                    <a href="#" onclick="castVote(${clubElection["electionID"]}, ${candidate["candidateID"]})" class="btn btn-success">Cast Vote</a>
+                                                </div>
+                                                </div>
+                                            </div> 
+                                                `
+
+                    listOfElections += `<div class="col-sm-12 mt-3">
+                                            <div class="card">
+                                                <div class="jumbotron">
+                                                    <h1 class="display-4">${clubElection["position"]}</h1>
+                                                    <p class="lead">${clubElection["clubName"]}</p>
+                                                </div>
+                                                <div class="card-body">
+                                                    <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">
+                                                        Vote
+                                                    </a>
+                                                    <div class="collapse" id="election-${clubElection["electionID"]}">
+                                                        <div class="row">
+                                                            ${listOfCandidates}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> `
+                }
+            }
+        }
+        
+        activeElectionsArea.innerHTML = listOfElections
+    } else {
+        console.log("No clubs")
+        
+        activeElectionsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No Active Elections</h5>
+            <p>Sorry, but there are currently no active elections. You can start an election in the 'Host Election' tab.</p>
+        </div> `
+    }
+
+}
+
+
+async function getAllMyActiveElections(){
+    let elections = await sendRequest(`${server}/api/elections`, "GET")
+    displayMyActiveElections(elections)
+}
+
 async function joinClub(clubID){
     let response = await sendRequest(`${server}/api/clubs/${clubID}`, "POST")
     if ("error" in response){
@@ -203,6 +265,16 @@ async function joinClub(clubID){
     } else {
         updateModalContent("Join Club", `${response["message"]}`)
     }
+}
+
+async function castVote(electionID, candidateID){
+    let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "POST")
+    if ("error" in response){
+        updateModalContent("Vote for Candidate", `${response["error"]}`)
+    } else {
+        updateModalContent("Vote for Candidate", `${response["message"]}`)
+    }
+    getAllMyActiveElections()
 }
 
 async function leaveClub(clubID){
@@ -220,6 +292,7 @@ function main(){
     document.forms["loginForm"].addEventListener("submit", login)
     document.querySelector("#club-tab").addEventListener("click", getAllClubs)
     document.querySelector("#myClubs-tab").addEventListener("click", getAllMyClubs)
+    document.querySelector("#activeElections-tab").addEventListener("click", getAllMyActiveElections)
     let logoutButton = document.querySelector("#logoutButton")
     logoutButton.addEventListener("click", logout)
     $('.toast').toast({"delay" : 3000})

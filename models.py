@@ -102,7 +102,7 @@ class User(db.Model):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
         if not memberships:
-            return None
+            return
 
         listOfMyElections = [membership.myElections() for membership in memberships]
         return listOfMyElections
@@ -203,8 +203,13 @@ class User(db.Model):
 
         return False
 
-    def castVote(self, clubID, candidateID):
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=clubID, id=self.id).first()
+    def castVote(self, electionID, candidateID):
+        elec = db.session.query(Election).filter_by(electionID=electionID).first()
+        if not elec:
+            print("Election cannot be found!")
+            return False
+
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=elec.clubID, id=self.id).first()
         
         if not clubMembership:
             print("User is not a member of this club!")
