@@ -57,6 +57,10 @@ def index():
 def client_app():
   return app.send_static_file('app.html')
 
+@app.route('/debug', methods=["GET"])
+def debug_app():
+  return app.send_static_file('debug.html')
+
 @app.route('/api/clubs', methods=["GET"])
 def getClubs():
   clubs = db.session.query(Club).all()
@@ -132,6 +136,13 @@ def getElectionsDebug():
   listOfElections = [election.toDict() for election in elections]
   return json.dumps(listOfElections)
 
+##Remove before production
+@app.route('/debug/candidates', methods=["GET"])
+def getCandidatesDebug():
+  candidates = db.session.query(Candidate).all()
+  listOfCandidates = [candidate.toDict() for candidate in candidates]
+  return json.dumps(listOfCandidates)
+
 @app.route('/api/elections', methods=["GET"])
 @jwt_required()
 def getMyElections():
@@ -139,10 +150,10 @@ def getMyElections():
   return json.dumps(myElections)
 
 @app.route('/api/elections/<electionID>', methods=["GET"])
-def getElectionsByID(electionID):
-  elections = db.session.query(Election).filter_by(electionID=electionID).all()
-  listOfElections = [election.toDict() for election in elections]
-  return json.dumps(listOfElections)
+@jwt_required()
+def getElectionByID(electionID):
+  election = current_identity.viewElection(electionID)
+  return json.dumps(election)
 
 @app.route('/api/elections', methods=["POST"])
 @jwt_required()
@@ -152,7 +163,6 @@ def createElection():
   if not electionDetails or not electionDetails["clubID"] or not electionDetails["position"] or not electionDetails["candidates"]:
     return json.dumps({"message" : "Not enough information provided!"})
 
-  
   response = current_identity.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
 
   if response:
@@ -212,18 +222,20 @@ def getMyManagingElections():
 @app.route('/api/myElections/<electionID>', methods=["GET"])
 @jwt_required()
 def displayMyElection(electionID):
-  myElections = current_identity.myElections()
+  myElections = current_identity.myManagingElections()
   currElection = None
+  
   for election in myElections:
-    if election.electionID == electionID:
-      currElection = election
+    for i in range(0, len(election)):
+      if election[i]["electionID"] == int(electionID):
+        currElection = election[i]
   
   if not currElection:
     return json.dumps({"message" : "You are not a member of the club that is hosting this election or the election does not exist!"})
   else:
     return json.dumps(currElection)
 
-@app.route('/api/elections/<electionID>/<candidateID>', methods=["PUT"])
+@app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["PUT"])
 @jwt_required()
 def updateCandidateDetails(electionID, candidateID):
   updateDetails = request.get_json()
@@ -241,6 +253,47 @@ def updateCandidateDetails(electionID, candidateID):
   else:
     return json.dumps({"message" : "Unable to update candidate!"})
 
+@app.route('/api/elections/<electionID>/candidates', methods=["GET"])
+@jwt_required()
+def getCandidatesDetails(electionID):
+  candidatesDetails = current_identity.getElectionCandidatesDetails(electionID)
+  return json.dumps(candidatesDetails)
+
+@app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["GET"])
+@jwt_required()
+def getCandidateDetails(electionID, candidateID):
+  candidateDetails = current_identity.viewCandidate(electionID, candidateID)
+  return json.dumps(candidateDetails)
+
+@app.route('/api/elections/<electionID>/candidates', methods=["POST"])
+@jwt_required()
+def addCandidate(electionID):
+  candidateDetails = request.get_json()
+
+  newDetails = {}
+
+  if "firstName" in candidateDetails and "lastName" in candidateDetails:
+    newDetails = {
+      "firstName": candidateDetails["firstName"],
+      "lastName" : candidateDetails["lastName"]
+    }
+
+  result = current_identity.addCandidate(electionID, newDetails)
+
+  if result:
+    return json.dumps({"message" : "Candidate has been added to election!"})
+  else:
+    return json.dumps({"message" : "Unable to add candidate to election!"})
+
+@app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["DELETE"])
+@jwt_required()
+def deleteCandidate(electionID, candidateID):
+  result = current_identity.deleteCandidate(electionID, candidateID)
+
+  if result:
+    return json.dumps({"message" : "Candidate has been deleted from the election!"})
+  else:
+    return json.dumps({"message" : "Unable to delete candidate from election!"})
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080, debug=True)

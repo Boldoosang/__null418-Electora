@@ -82,6 +82,22 @@ class User(db.Model):
 
         return membership.changePosition(electionID, position)
 
+    def addCandidate(self, electionID, candidateDetails):
+        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
+        
+        if not membership:
+            return False
+
+        return membership.addCandidate(electionID, candidateDetails)
+
+    def deleteCandidate(self, electionID, candidateID):
+        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
+        
+        if not membership:
+            return False
+
+        return membership.deleteCandidate(electionID, candidateID)
+
     def myElections(self):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
@@ -90,6 +106,65 @@ class User(db.Model):
 
         listOfMyElections = [membership.myElections() for membership in memberships]
         return listOfMyElections
+
+    def viewElection(self, electionID):
+        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
+
+        if not memberships:
+            return None
+
+        election = db.session.query(Election).filter_by(electionID=electionID).first()
+        
+        if not election:
+            return None
+
+
+        for membership in memberships:
+            if election.clubID == membership.clubID:
+                return election.toDict()
+
+        return None
+
+    def getElectionCandidatesDetails(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID).first()
+
+        if not election:
+            print("Election does not eixst!")
+            return []
+
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=self.id).first()
+
+        if not election:
+            print("User does not have permission to view these candidates!")
+            return []
+        
+        candidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
+
+        return [candidate.toDict() for candidate in candidates]
+
+    def viewCandidate(self, electionID, candidateID):
+        cand = db.session.query(Candidate).filter_by(candidateID=candidateID, electionID=electionID).first()
+
+        if not cand:
+            print("Candidate does not eixst!")
+            return None
+
+        election = db.session.query(Election).filter_by(electionID=electionID).first()
+
+        if not election:
+            print("Election does not exist or may have been deleted!")
+            return None
+
+        clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=self.id).first()
+
+        if not election:
+            print("User does not have permission to view this candidate!")
+            return None
+        
+        return cand.toDict()
+
+
+
 
     def leaveClub(self, clubID):
         result = db.session.query(Club).filter_by(clubID=clubID).first()
@@ -458,6 +533,14 @@ class ClubMember(db.Model):
 
         listOfMyElections = [election.toDict() for election in myElections]
         return listOfMyElections
+
+    def viewElection(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID).first()
+
+        if not election:
+            return None
+        
+        return election.toDict()
     
     def changePosition(self, electionID, position):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
@@ -477,6 +560,57 @@ class ClubMember(db.Model):
         except:
             db.session.rollback()
             print("Unable to update election position!")
+            return False
+        
+        return True
+
+    def addCandidate(self, electionID, candidateDetails):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your managing elections!")
+            return False
+
+        if not election.isOpen:
+            print("Unable to add candidate as election is closed!")
+            return False
+
+        duplicate = db.session.query(Candidate).filter_by(electionID=electionID, firstName=candidateDetails["firstName"], lastName=candidateDetails["lastName"]).first()
+        if duplicate:
+            print("Candidate already exists for this election!")
+            return False
+
+        try:
+            newCandidate = Candidate(electionID=electionID, firstName=candidateDetails["firstName"], lastName=candidateDetails["lastName"])
+            db.session.add(newCandidate)
+            db.session.commit()
+            print("Candidate added to election!")
+        except:
+            db.session.rollback()
+            print("Unable to add candidate!")
+            return False
+        
+        return True
+
+    def deleteCandidate(self, electionID, candidateID):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your managing elections!")
+            return False
+
+        if not election.isOpen:
+            print("Unable to delete candidate as election is closed!")
+            return False
+
+        try:
+            candidate = db.session.query(Candidate).filter_by(electionID=electionID, candidateID=candidateID).first()
+            db.session.delete(candidate)
+            db.session.commit()
+            print("Candidate deleted from election!")
+        except:
+            db.session.rollback()
+            print("Unable to delete candidate!")
             return False
         
         return True
