@@ -210,8 +210,6 @@
       Generic Unedited Toast Message
     </div>
   </div>
-
-  
   
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -230,31 +228,44 @@
         `
     }
 
+    async function addCandidate(){
+      let content=document.querySelector('#candidate')
+
+      content.innerHTML+=
+      `
+          <div class="form-group" id="candidate">
+            <label for="nameInput">Candidate Name</label>
+            <input type="text" class="form-control" placeholder="First Name">
+            <input type="text" class="form-control" placeholder="Last Name">
+          </div>
+      `
+    }
     async function displayAddElection(){
       let content=document.querySelector('#electionContent')
       content.innerHTML=
       `
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <label class="input-group-text" for="clubInput">Options</label>
+      <form id="createElectionForm">
+        <div class="form-group">
+          <label for="clubInput">Choose Club</label>
+          <select class="form-control" id="clubInput"></select>
         </div>
-        <select class="custom-select" id="clubInput">
-        </select>
-      </div>
         
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="">Candidate Name</span>
-          </div>
-          <input type="text" class="form-control">
+        <div class="form-group">
+          <label for="positionInput">Election Position</label>
+          <input type="text" class="form-control" id="positionInput">
         </div>
 
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="">Election Position</span>
+        <div id="candidate">
+          <div class="form-group" id="candidate">
+            <label for="nameInput">Candidate Name</label>
+            <input type="text" class="form-control" placeholder="First Name">
+            <input type="text" class="form-control" placeholder="Last Name">
           </div>
-          <input type="text" class="form-control">
         </div>
+
+        <button type="button" class="btn btn-outline-primary" onClick="addCandidate()">Add Candidate</button>
+        <button id="electionSubmit" type="submit" class="btn btn-primary">Begin Election</button>
+      </form>
       `
 
       let clubOptions=document.querySelector("#clubInput")
@@ -264,6 +275,50 @@
       for(club of myClubs){
         clubOptions.innerHTML+=`<option value="${club['clubID']}">${club["clubName"]}</option>`
       }
+
+      document.forms["createElectionForm"].addEventListener("submit", createElection)
+    }
+
+    async function createElection(event){
+      event.preventDefault()
+      const names = document.querySelector('#candidate')
+      let fields = names.querySelectorAll('input')
+      let cnames = []
+      let name = []
+      let fname
+      let lname
+      i=0
+
+      for(field of fields){
+        if(i==0){
+          fname = field['value']  
+          i=1
+          continue
+        }
+        if(i==1){
+          lname = field['value']
+          name={
+            "firstName": fname,
+            "lastName": lname
+          }
+          
+          cnames.push(name)
+          name = {}
+          i=0
+        }
+      }
+
+      let form = event.target.elements;
+      
+      let data={
+        clubID: form['clubInput'].value,
+        position: form['positionInput'].value,
+        candidates: cnames
+      }
+
+      console.log(data)
+
+      let response = await sendRequest(`${server}/api/elections`, "POST", data)
     }
 
     async function displayManageElection(){
