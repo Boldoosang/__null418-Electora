@@ -165,7 +165,6 @@ def createElection():
 def updateElection(electionID):
   updateDetails = request.get_json()
 
-  #Add ability to update candidates
   if not updateDetails or not electionID:
     return json.dumps({"message" : "Not enough information provided!"})
   
@@ -182,11 +181,17 @@ def updateElection(electionID):
         return json.dumps({"message" : "Election closed!"})
       else :
         return json.dumps({"message" : "You do not have permission to close this election!"})
+  
+  if "position" in updateDetails:
+    if current_identity.changePosition(electionID, updateDetails["position"]):
+      return json.dumps({"message" : "Election position updated!"})
+    else:
+      return json.dumps({"message" : "You do not have permission to change the position within this election or the election is closed!"})
+
 
 @app.route('/api/elections/<electionID>', methods=["DELETE"])
 @jwt_required()
 def deleteElection(electionID):
-  #Add ability to update candidates
   if not electionID:
     return json.dumps({"message" : "Not election ID provided!"})
   
@@ -203,6 +208,39 @@ def deleteElection(electionID):
 def getMyManagingElections():
   myElections = current_identity.myManagingElections()
   return json.dumps(myElections)
+
+@app.route('/api/myElections/<electionID>', methods=["GET"])
+@jwt_required()
+def displayMyElection(electionID):
+  myElections = current_identity.myElections()
+  currElection = None
+  for election in myElections:
+    if election.electionID == electionID:
+      currElection = election
+  
+  if not currElection:
+    return json.dumps({"message" : "You are not a member of the club that is hosting this election or the election does not exist!"})
+  else:
+    return json.dumps(currElection)
+
+@app.route('/api/elections/<electionID>/<candidateID>', methods=["PUT"])
+@jwt_required()
+def updateCandidateDetails(electionID, candidateID):
+  updateDetails = request.get_json()
+
+  newDetails = {}
+
+  if "firstName" in updateDetails and "lastName" in updateDetails:
+    newDetails = {
+      "firstName": updateDetails["firstName"],
+      "lastName" : updateDetails["lastName"]
+    }
+  
+  if current_identity.updateCandidateDetails(electionID, candidateID, newDetails):
+    return json.dumps({"message" : "Candidate details updated!"})
+  else:
+    return json.dumps({"message" : "Unable to update candidate!"})
+
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080, debug=True)

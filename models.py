@@ -74,6 +74,14 @@ class User(db.Model):
         listOfMyElections = [membership.myManagingElections() for membership in memberships]
         return listOfMyElections
 
+    def changePosition(self, electionID, position):
+        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
+        
+        if not membership:
+            return False
+
+        return membership.changePosition(electionID, position)
+
     def myElections(self):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
@@ -176,6 +184,14 @@ class User(db.Model):
             return False
         
         return clubMembership.deleteElection(electionID=electionID)
+
+    def updateCandidateDetails(self, electionID, candidateID, newDetails):
+        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
+        
+        if not membership:
+            return False
+
+        return membership.updateCandidateDetails(electionID, candidateID, newDetails)
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
@@ -442,6 +458,28 @@ class ClubMember(db.Model):
 
         listOfMyElections = [election.toDict() for election in myElections]
         return listOfMyElections
+    
+    def changePosition(self, electionID, position):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+
+        if not election:
+            print("No election found in your managing elections!")
+            return False
+
+        if not election.isOpen:
+            print("Unable to update position as election is closed!")
+            return False
+        
+        try:
+            election.position = position
+            db.session.add(election)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print("Unable to update election position!")
+            return False
+        
+        return True
 
     def deleteElection(self, electionID):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
@@ -462,7 +500,31 @@ class ClubMember(db.Model):
             
             return False
 
-    
+    def updateCandidateDetails(self, electionID, candidateID, newDetails):
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID, isOpen=True).first()
+
+        if not election:
+            print("No election found in your managing elections!")
+            return False
+
+        candidate = db.session.query(Candidate).filter_by(electionID = electionID, candidateID = candidateID).first()
+
+        if not candidate:
+            print("No candidate found by that ID!")
+            return False
+
+        try:
+            candidate.firstName = newDetails["firstName"]
+            candidate.lastName = newDetails["lastName"]
+            db.session.add(candidate)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print("Unable to update election position!")
+            return False
+        
+        return True
+
 
 class ElectionBallot(db.Model):
     ballotID = db.Column(db.Integer, primary_key=True)
