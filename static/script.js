@@ -238,9 +238,15 @@ async function displayMyActiveElections(myElections){
                                                     <div class="card-body">
                                                         <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
                                                         <div class="collapse" id="election-${clubElection["electionID"]}">
-                                                            <div class="row">
-                                                                ${listOfCandidates}
-                                                            </div>
+                                                            <form>
+                                                                <div class="row">
+                                                                    ${listOfCandidates}
+                                                                </div>
+                                                                <div class="text-center mt-4">
+                                                                    <hr class="my-4">
+                                                                    <a style="width: 50%;" type="submit" class="btn btn-primary" onclick="castVote(${clubElection["electionID"]})" role="button">Cast Vote</a>
+                                                                </div>
+                                                            </form>
                                                         </div>
                                                     </div>
                                                 </div>
