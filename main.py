@@ -130,7 +130,7 @@ def register():
 @app.route('/identify', methods=["GET"])
 @jwt_required()
 def identify():
-  return json.dumps(current_identity.username)
+  return json.dumps({"username" : current_identity.username})
 
 #Remove before production
 @app.route('/debug/elections', methods=["GET"])
