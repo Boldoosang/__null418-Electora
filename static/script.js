@@ -199,29 +199,48 @@ async function getAllMyClubs(){
 
 async function displayMyActiveElections(myElections){
     activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
-    console.log(myElections)
     let listOfElections = ""
     //Error here, fix.
-    if((myElections != null) && (myElections.length > 0) && (!myElections.includes(null))){
-        for(clubElections of myElections){
-            if(clubElections != null){
-                //Add header for club here to separate clubs.
-                listOfCandidates = ""
-                for(clubElection of clubElections){
-                    let electionStatus = `<h3>Closed Election</h3>`
-                    if(clubElection.isOpen)
-                        electionStatus = `<h3>Open Election</h3>`
-                    for(candidate of clubElection.candidates)
-                        listOfCandidates += `<div class="card mt-3 col-sm-6">
-                                                <div class="row">
-                                                    <div class="col-md-2 text-center h-100 card-img-top">
-                                                        <input class="h-100 w-100 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
-                                                    </div>
-                                                    <div class="col-sm-8 pl-0">
-                                                        <div class="card-body col-sm-12">
-                                                            <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
-                                                            <p class="card-text">This </p>
+
+    if(myElections != null){
+        myElections.filter(function (el) {
+            return el != null;
+        });
+        if(myElections[0] == null)
+            myElections = null
+    }
+
+    if((myElections != null)) {
+        if(myElections.length > 0){
+            for(clubElections of myElections){
+                if(clubElections != null){
+                    listOfCandidates = ""
+                    for(clubElection of clubElections){
+                        let electionStatus = `<h3>Closed Election</h3>`
+                        if(clubElection.isOpen)
+                            electionStatus = `<h3>Open Election</h3>`
+                        for(candidate of clubElection.candidates)
+                            listOfCandidates += `<div class="card mt-3 col-sm-6">
+                                                    <div class="row">
+                                                        <div class="col-md-2 text-center h-100 card-img-top">
+                                                            <input class="h-100 w-100 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
                                                         </div>
+                                                        <div class="col-sm-8 pl-0">
+                                                            <div class="card-body col-sm-12">
+                                                                <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                                <p class="card-text">This </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>`
+
+                        listOfElections += `<div class="col-sm-12 mt-3">
+                                                <div class="card">
+                                                    <div class="jumbotron">
+                                                        <h1 class="display-4">${clubElection["position"]}</h1>
+                                                        <p class="lead">${clubElection["clubName"]}</p>
+                                                        <hr class="my-4">
+                                                        <h5>${electionStatus}</h5>
                                                     </div>
                                                     <div class="card-body">
                                                         <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
@@ -238,15 +257,16 @@ async function displayMyActiveElections(myElections){
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div> `
+                                            </div> `
+                        
+                    }
+                    activeElectionsArea.innerHTML = listOfElections
                 }
+                
             }
-        }
-        activeElectionsArea.innerHTML = listOfElections
+            
+        } 
     } else {
-        console.log("No clubs")
-        
         activeElectionsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center"">
             <h5>No Active Elections</h5>
