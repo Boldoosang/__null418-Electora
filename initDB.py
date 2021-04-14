@@ -6,12 +6,14 @@ os.remove("test.db")
 
 db.create_all(app=app)
 
+clubDescription1 = "The UWICS are..."
+clubDescription2 = "Placeholder text"
 
-db.session.add(Club(clubName="UWI Computing Society"))
-db.session.add(Club(clubName="UWI Actuarial Science Club"))
-db.session.add(Club(clubName="UWI Biological Society"))
-db.session.add(Club(clubName="UWI Leadership Council"))
-db.session.add(Club(clubName="UWI Art Society"))
+db.session.add(Club(clubName="UWI Computing Society", clubDescription=clubDescription1)) #clubImage = , 
+db.session.add(Club(clubName="UWI Actuarial Science Club", clubDescription=clubDescription2))
+db.session.add(Club(clubName="UWI Biological Society", clubDescription=clubDescription2))
+db.session.add(Club(clubName="UWI Leadership Council", clubDescription=clubDescription2))
+db.session.add(Club(clubName="UWI Art Society", clubDescription=clubDescription2))
 
 
 db.session.commit()

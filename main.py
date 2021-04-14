@@ -85,7 +85,7 @@ def joinClub(clubID):
   if response:
     return json.dumps({"message" : "Club joined!"})
   else:
-    return json.dumps({"message" : "User is already a member of this club!"})
+    return json.dumps({"error" : "User is already a member of this club or club does not exist!"})
 
 @app.route('/api/myClubs', methods=["GET"])
 @jwt_required()

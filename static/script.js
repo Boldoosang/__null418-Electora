@@ -109,7 +109,6 @@ async function determineSessionContext(){
     let token = window.localStorage.getItem("access_token")
     let logoutButton = document.querySelector("#logoutButton")
     
-    
     if(token){
         username = await sendRequest(`${server}/identify`, "GET")
         logoutButton.innerText = "Logout"
@@ -129,13 +128,103 @@ async function determineSessionContext(){
     
 }
 
+async function displayClubs(clubs){
+    clubArea = document.querySelector("#clubDisplayArea")
+    let listOfClubs = ""
+    if(clubs.length > 0){
+        
+        for(club of clubs){
+            listOfClubs += `<div class="col-sm-6 mt-3">
+                              <div class="card" style="width: 100%;">
+                                <img class="card-img-top" src="${club["clubImage"]}" alt="Card image cap">
+                                <div class="card-body">
+                                  <h5 class="card-title">${club["clubName"]}</h5>
+                                  <p class="card-text">${club["clubDescription"]}</p>
+                                  <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-primary">Join Club</a>
+                                </div>
+                              </div>
+                            </div> `
+        }
+        
+        clubDisplayArea.innerHTML = listOfClubs
+        
+    } else {
+        console.log("No clubs")
+    }
+}
+
+
+async function getAllClubs(){
+    let clubs = await sendRequest(`${server}/api/clubs`, "GET")
+    displayClubs(clubs)
+}
+
+
+async function displayMyClubs(myClubs){
+    console.log(myClubs)
+    myClubsArea = document.querySelector("#myClubsDisplayArea")
+    let listOfClubs = ""
+    if(myClubs.length > 0){
+        for(myClub of myClubs){
+            listOfClubs += `<div class="col-sm-6 mt-3">
+                              <div class="card" style="width: 100%;">
+                                <img class="card-img-top" src="${myClub["clubImage"]}" alt="Card image cap">
+                                <div class="card-body">
+                                  <h5 class="card-title">${myClub["clubName"]}</h5>
+                                  <p class="card-text">${myClub["clubDescription"]}</p>
+                                  <a href="#" onclick="leaveClub(${myClub["clubID"]})" class="btn btn-danger">Leave club</a>
+                                </div>
+                              </div>
+                            </div> `
+        }
+        
+        myClubsArea.innerHTML = listOfClubs
+    } else {
+        console.log("No clubs")
+        
+        myClubsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No Joined Clubs</h5>
+            <p>Sorry, but you are not a member of any clubs. You can join a club via the 'Clubs' tab.</p>
+        </div> `
+    }
+
+}
+
+async function getAllMyClubs(){
+    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    displayMyClubs(myClubs)
+}
+
+async function joinClub(clubID){
+    let response = await sendRequest(`${server}/api/clubs/${clubID}`, "POST")
+    if ("error" in response){
+        updateModalContent("Join Club", `${response["error"]}`)
+    } else {
+        updateModalContent("Join Club", `${response["message"]}`)
+    }
+}
+
+async function leaveClub(clubID){
+    let response = await sendRequest(`${server}/api/myClubs/${clubID}`, "DELETE")
+    if ("error" in response){
+        updateModalContent("Leave Club", `${response["error"]}`)
+    } else {
+        updateModalContent("Leave Club", `${response["message"]}`)
+    }
+    getAllMyClubs()
+}
+
 function main(){
     document.forms["signUpForm"].addEventListener("submit", signUp)
     document.forms["loginForm"].addEventListener("submit", login)
+    document.querySelector("#club-tab").addEventListener("click", getAllClubs)
+    document.querySelector("#myClubs-tab").addEventListener("click", getAllMyClubs)
     let logoutButton = document.querySelector("#logoutButton")
     logoutButton.addEventListener("click", logout)
     $('.toast').toast({"delay" : 3000})
     determineSessionContext()
+    getAllClubs()
 }
 
 document.addEventListener('DOMContentLoaded', main)

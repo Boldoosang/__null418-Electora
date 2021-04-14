@@ -270,6 +270,8 @@ class User(db.Model):
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
+    clubDescription = db.Column(db.String(300), nullable = False, default="This group does not have a description.")
+    clubImage = db.Column(db.String(300), nullable = False, default="https://cdn.pixabay.com/photo/2017/03/31/17/44/avatar-2191932_1280.png")
     clubName = db.Column(db.String(80), nullable=False, unique=True)
     elections = db.relationship('Election', backref='hostingClub')
     members = db.relationship('ClubMember', backref='club')
@@ -284,7 +286,9 @@ class Club(db.Model):
         return {
             "clubID" : self.clubID,
             "clubName" : self.clubName,
-            "numMembers" : numMembers
+            "numMembers" : numMembers,
+            "clubDescription" : self.clubDescription,
+            "clubImage" : self.clubImage
         }
 
 class Election(db.Model):
@@ -410,7 +414,9 @@ class ClubMember(db.Model):
             'memberID': self.memberID,
             'username' : member.username,
             'clubID' : myClub.clubID,
-            'clubName' : myClub.clubName
+            'clubName' : myClub.clubName,
+            'clubImage' : myClub.clubImage,
+            'clubDescription' : myClub.clubDescription
         }
     
     def castVote(self, candidateID):
