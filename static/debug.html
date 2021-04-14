@@ -201,11 +201,25 @@
       `
       <div class="input-group mb-3">
         <div class="input-group-prepend">
-        <label class="input-group-text" for="clubInput">Options</label>
+          <label class="input-group-text" for="clubInput">Options</label>
+        </div>
+        <select class="custom-select" id="clubInput">
+        </select>
       </div>
-      <select class="custom-select" id="clubInput">
-                  </select>
-                </div>
+        
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="">Candidate Name</span>
+          </div>
+          <input type="text" class="form-control">
+        </div>
+
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="">Election Position</span>
+          </div>
+          <input type="text" class="form-control">
+        </div>
       `
 
       let clubOptions=document.querySelector("#clubInput")
@@ -213,14 +227,8 @@
 
       let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
       for(club of myClubs){
-        
+        clubOptions.innerHTML+=`<option value="${club['clubID']}">${club["clubName"]}</option>`
       }
-      clubOptions.innerHTML=
-      `   
-      <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
-      `
     }
 
     async function displayManageElection(){
