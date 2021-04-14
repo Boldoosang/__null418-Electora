@@ -15,6 +15,9 @@ db.session.add(Club(clubName="UWI Biological Society", clubDescription=clubDescr
 db.session.add(Club(clubName="UWI Leadership Council", clubDescription=clubDescription2))
 db.session.add(Club(clubName="UWI Art Society", clubDescription=clubDescription2))
 
+db.session.add(Election(clubID=1, position="position", memberID=1, isOpen=False, electionWinner="Me"))
+db.session.add(Election(clubID=1, position="position", memberID=1, isOpen=False, electionWinner="Me"))
+db.session.add(Election(clubID=1, position="position", memberID=1, isOpen=False, electionWinner="Me"))
 
 db.session.commit()
 '''
