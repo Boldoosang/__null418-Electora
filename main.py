@@ -67,6 +67,13 @@ def getClubs():
   listOfClubs = [club.toDict() for club in clubs]
   return json.dumps(listOfClubs)
 
+@app.route('/api/clubs/<clubID>/getPastElections', methods=["GET"])
+def getPastElections(clubID):
+  pastElections= Election.query.filter_by(clubID=clubID, isOpen=False)
+  pastElections=[election.toDict() for election in pastElections]
+  return json.dumps(pastElections)
+  
+
 @app.route('/api/clubs/<clubID>', methods=["GET"])
 def getClubsByID(clubID):
   foundClub = db.session.query(Club).filter_by(clubID=clubID).first()

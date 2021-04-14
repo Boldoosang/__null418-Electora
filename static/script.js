@@ -1,5 +1,6 @@
 
 const server = "http://localhost:8080"
+console.log(server)
 let username
 
 async function sendRequest(url, method, data){
@@ -131,8 +132,7 @@ async function determineSessionContext(){
 async function displayClubs(clubs){
     clubArea = document.querySelector("#clubDisplayArea")
     let listOfClubs = ""
-    if(clubs.length > 0){
-        
+    if(clubs.length > 0){  
         for(club of clubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
                               <div class="card" style="width: 100%;">
@@ -183,7 +183,7 @@ async function displayMyClubs(myClubs){
         console.log("No clubs")
         
         myClubsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center">
             <h5>No Joined Clubs</h5>
             <p>Sorry, but you are not a member of any clubs. You can join a club via the 'Clubs' tab.</p>
         </div> `

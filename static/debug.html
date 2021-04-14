@@ -14,7 +14,9 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand mb-0 h1" href="#">Electora Club Voting App</a>
+      <div class="collapse navbar-collapse"></div>
+
+      <a class="navbar-brand mx-auto h1" href="#">Electora Club Voting App</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -66,10 +68,36 @@
         <div id="activeElectionsDisplayArea" class="row mt-3"></div>
       </div>
       <div class="tab-pane fade" id="pastElectionsContent" role="tabpanel">
-        Past Elections Content
+        <div class="row">
+          <div class="col-3 my-3">
+            <nav class="nav flex-column" id="clubList">
+
+            </nav>
+          </div>
+          <div class="col my-3" id="clubPastElections">
+            <div class="col-sm-12 mt-3 text-center">
+              <h5>Please Select a Club</h5>
+          </div>
+          </div>
+        </div>
       </div>
       <div class="tab-pane fade" id="hostElectionContent" role="tabpanel">
-        Host Election Content
+        <div class="row">
+          <div class="col-3 my-3">
+            <nav class="nav flex-column" id="electionOptions">
+
+            </nav>
+          </div>
+          <div class="col my-3" id="electionContent">
+            <div class="col-sm-12 mt-3 text-center">
+              <div class="container">
+                <h5>Please Select an Option</h5>
+
+                
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -149,10 +177,91 @@
   </div>
 
   
+  
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
   <script src="script.js"></script>
+  <script>
+    document.querySelector("#pastElections-tab").addEventListener("click", getPastElections)
+    document.querySelector("#hostElection-tab").addEventListener("click", displayElectionsManager)
+
+    async function displayElectionsManager(){
+      let optionList=document.querySelector('#electionOptions')
+      optionList.innerHTML=`
+        <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
+        <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayManageElection()">Manage Election</button>
+        `
+    }
+
+    async function displayAddElection(){
+      let content=document.querySelector('#electionContent')
+      content.innerHTML=
+      `
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+        <label class="input-group-text" for="clubInput">Options</label>
+      </div>
+      <select class="custom-select" id="clubInput">
+                  </select>
+                </div>
+      `
+
+      let clubOptions=document.querySelector("#clubInput")
+      clubOptions.innerHTML= "<option selected>Choose...</option>"
+
+      let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+      for(club of myClubs){
+        
+      }
+      clubOptions.innerHTML=
+      `   
+      <option value="1">One</option>
+      <option value="2">Two</option>
+      <option value="3">Three</option>
+      `
+    }
+
+    async function displayManageElection(){
+      let content=document.querySelector('#electionContent')
+    }
+
+    async function getPastElections(){
+      let clubList= document.querySelector('#clubList')
+      clubList.innerHTML=""
+      
+      let clubs = await sendRequest(`${server}/api/clubs`, "GET")
+      for (club of clubs){
+        clubList.innerHTML+=`
+        <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayPastElections(${club["clubID"]})">${club["clubName"]}</button>
+        `
+      }
+    }
+
+    async function displayPastElections(clubID){
+      let pastElections= document.querySelector('#clubPastElections')
+      pastElections.innerHTML=""
+      let elections = await sendRequest(`${server}/api/clubs/${clubID}/getPastElections`, "GET")
+      
+      console.log(elections)
+      for(election of elections){
+        //WIP
+        //needs closed elections to test
+        pastElections.innerHTML+=
+        `
+        <div class="jumbotron">
+          <h1 class="display-4">Election Winner: ${election["electionWinner"]}</h1>
+          <p class="lead">Position: ${election["position"]}</p>
+          <p class="lead">End Date: ${election["Election End Date"]}</p>
+          <hr class="my-4">
+          <p class="lead">
+          <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+          </p>
+        </div>
+        `
+      }      
+    }
+  </script>
 </body>
 </html>
