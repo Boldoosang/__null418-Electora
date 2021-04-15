@@ -533,12 +533,22 @@ async function leaveClub(clubID){
 
 async function displayElectionsManager(){
     let optionList=document.querySelector('#electionOptions')
+    let content=document.querySelector('#electionContent')
 
     if(!window.localStorage.getItem("access_token")){
       optionList.innerHTML=""
       displayNotLoggedIn()
 
     }else{
+    content.innerHTML=`
+    <div class="container row d-flex justify-content-center mt-3">
+                    <div class="col-sm-12 mt-3 text-center">
+                        <h5>Select an Option</h5>
+                        <p>Select an option to manage elections.</p>
+                </div>
+
+            </div>
+    `
     optionList.innerHTML=`
       <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
       <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
