@@ -54,12 +54,8 @@ def index():
   return render_template('app.html')
 '''
 @app.route('/')
-def client_app():
+def clientApp():
   return app.send_static_file('app.html')
-
-@app.route('/debug', methods=["GET"])
-def debug_app():
-  return app.send_static_file('debug.html')
 
 @app.route('/api/clubs', methods=["GET"])
 def getClubs():

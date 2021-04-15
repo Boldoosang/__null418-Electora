@@ -50,6 +50,7 @@ async function login(event){
         updateModalContent("Login", `Login successful!`)
 
         window.localStorage.setItem('access_token', result['access_token']);
+        window.location = `${server}`
     } 
     determineSessionContext()
     $('#loginModal').modal('hide')
@@ -104,6 +105,7 @@ function logout(){
         updateModalContent("Logout", "You were not logged in!")
     }
     determineSessionContext()
+    window.location = `${server}`
 }
 
 async function determineSessionContext(){
@@ -180,12 +182,10 @@ async function displayMyClubs(myClubs){
         
         myClubsArea.innerHTML = listOfClubs
     } else {
-        console.log("No clubs")
-        
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
             <h5>No Joined Clubs</h5>
-            <p>Sorry, but you are not a member of any clubs. You can join a club via the 'Clubs' tab.</p>
+            <p>Sorry, but you are not a member of any club. You can join a club via the 'Clubs' tab.</p>
         </div> `
     }
 
@@ -193,15 +193,34 @@ async function displayMyClubs(myClubs){
 
 async function getAllMyClubs(){
     let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
-    displayMyClubs(myClubs)
+    let myClubsArea = document.querySelector("#myClubsDisplayArea")
+    try {
+        if ("error" in myClubs){
+            updateModalContent("View My Clubs", `Not logged in!`)
+            myClubsArea.innerHTML = 
+            `<div class="col-sm-12 mt-3 text-center"">
+                <h5>Not logged in!</h5>
+                <p>Sorry, but you need to be logged in to view your clubs.</p>
+            </div> `
+        } else {
+            displayMyClubs(myClubs)
+        }
+    } catch(e){
+        //Error generated when there are no clubs
+        updateModalContent("View My Clubs", `No clubs yet!`)
+        myClubsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No clubs have been created!</h5>
+            <p>Sorry, but there hasn't been any clubs added to this application.</p>
+        </div> `
+    }
 }
 
 
 async function displayMyActiveElections(myElections){
     activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
     let listOfElections = ""
-    //Error here, fix.
-
+    let openElections = 0
     if(myElections != null){
         myElections.filter(function (el) {
             return el != null;
@@ -217,8 +236,11 @@ async function displayMyActiveElections(myElections){
                     listOfCandidates = ""
                     for(clubElection of clubElections){
                         let electionStatus = `<h3>Closed Election</h3>`
-                        if(clubElection.isOpen)
+                        if(clubElection.isOpen){
                             electionStatus = `<h3>Open Election</h3>`
+                            openElections++
+                        } else
+                            continue
                         for(candidate of clubElection.candidates)
                             listOfCandidates += `<div class="card mt-3 col-sm-6">
                                                     <div class="row">
@@ -266,21 +288,207 @@ async function displayMyActiveElections(myElections){
             }
             
         } 
-    } else {
+    } 
+    if(openElections <= 0){
         activeElectionsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center"">
             <h5>No Active Elections</h5>
             <p>Sorry, but there are currently no available active elections. You can start an election in the 'Host Election' tab.</p>
+        </div> `
+        updateModalContent("View Active Elections", `No active elections!`)
+    }
+
+}
+
+//Does not show appropriate message for closed elections
+async function getAllMyActiveElections(){
+    let elections = await sendRequest(`${server}/api/elections`, "GET")
+
+    if(!window.localStorage.getItem("access_token")){
+        updateModalContent("View Active Elections", `Not logged in!`)
+        activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
+        activeElectionsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>Not logged in!</h5>
+            <p>Sorry, but you need to be logged in to view the active elections.</p>
+        </div> `
+    } else {
+        displayMyActiveElections(elections)
+    }
+}
+
+
+async function getMyPastElections(){
+    console.log("Clicked")
+    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
+
+    if(!window.localStorage.getItem("access_token")){
+        updateModalContent("Past Elections", `Not logged in!`)
+        pastElectionsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>Not logged in!</h5>
+            <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
+        </div> `
+    } else {
+        pastElectionsArea.innerHTML = ` <div class="row w-100">
+                                            <div class="col-3 my-3">
+                                                <nav class="nav flex-column" id="clubList">
+                                                    <div class="navbar" id="clubPastElections">
+                                                        <ul id="pastElectionClubList" class="navbar-nav ml-auto"></ul>
+                                                    </div>
+                                                </nav>
+                                            </div>
+                                            <div class="col-sm-9 my-3" id="pastElectionDisplayArea">
+                                                <div class="col-sm-12 mt-3 text-center">
+                                                    <h5>Please Select a Club</h5>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        `
+        displayMyPastElectionsMenu(myClubs)
+    }
+  }
+
+async function displayMyPastElectionsMenu(myClubs){
+    let pastElectionClubList = document.querySelector("#pastElectionClubList")
+    let listOfClubs = ""
+
+    if(myClubs != null && myClubs.length > 0){
+        for(myClub of myClubs){
+            listOfClubs += `<li class="nav-item">
+                                <a value="${myClub["clubID"]}" id="" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})" class="peClubList nav-link" href="#">${myClub["clubName"]}</a>
+                            </li> `
+            
+        }
+        pastElectionClubList.innerHTML = listOfClubs
+    } else {
+        let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
+        pastElectionsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No Joined Clubs</h5>
+            <p>Sorry, but you are not a member of any club. You can join a club via the 'Clubs' tab to view past elections for this club.</p>
+        </div> `
+    }
+
+}
+
+//Up next
+async function displayMyPastElectionsDetails(clubID){
+    let pastElectionDisplayArea = document.querySelector("#pastElectionDisplayArea")
+    let myPastElections = await sendRequest(`${server}/api/elections`, "GET")
+    let closedCount = 0;
+    let listOfElections = ""
+    
+    if(myPastElections != null){
+        myPastElections.filter(function (el) {
+            return el != null;
+        });
+        if(myPastElections[0] == null)
+        myPastElections = null
+    }
+
+    if((myPastElections != null)) {
+        if(myPastElections.length > 0){
+            for(clubElections of myPastElections){
+                if(clubElections != null){
+                    listOfCandidates = ""
+                    for(clubElection of clubElections){
+                        if(clubElection.clubID == clubID){
+                            let electionStatus = `<h3>Open Election</h3>`
+                            if(!clubElection.isOpen) {
+                                electionStatus = `<h3>Closed Election</h3>`
+                                closedCount++;
+                            } else
+                                continue
+
+                            for(candidate of clubElection.candidates){
+                                var cardColor;
+                                if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
+                                    cardColor = "bg-success"
+                                else if("Tie" == clubElection.electionWinner)
+                                    cardColor = "bg-secondary"
+                                else
+                                    cardColor = "bg-danger"
+                                    
+                                listOfCandidates += `<div class="card mt-3 mx-3 col-sm-5 ${cardColor}">
+                                                        <div class="card-body col-sm-12">
+                                                            <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                            <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
+                                                        </div>
+                                                    </div>`
+                            }
+
+                            listOfElections += `<div class="col-sm-12 mt-3">
+                                                <div class="card">
+                                                    <div class="jumbotron">
+                                                        <h1 style="font-size: 4em;">${clubElection["electionWinner"]}</h1>
+                                                        <h2 class="display-4">${clubElection["position"]}</h2>
+                                                        <p class="lead">${clubElection["clubName"]}</p>
+                                                        <hr class="my-4">
+                                                        <h5>${electionStatus}</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <a style="width: 100%;" class="btn btn-info" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Election Details</a>
+                                                        <div class="collapse" id="election-${clubElection["electionID"]}">
+                                                            <form onsubmit = "generateElectionGraph(event, ${clubElection["electionID"]})">
+                                                                <div class="row justify-content-between">
+                                                                    ${listOfCandidates}
+                                                                </div>
+                                                                <div class="text-center mt-4">
+                                                                    <hr class="my-4">
+                                                                    <a style="width: 25%;" class="btn btn-info" href="#" data-toggle="modal" data-target="#electionResultModal">More Info</a>
+                                                                    <a style="width: 25%;" class="btn btn-danger" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Close</a>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> `
+                            //
+                        }
+                    }
+                    pastElectionDisplayArea.innerHTML = listOfElections
+                }
+                
+            }
+            
+        } 
+    }
+    if(closedCount <= 0){
+        pastElectionDisplayArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No Past Elections for this Club</h5>
+            <p>Sorry, but there are no past elections for this club. You can start an election by clicking on the 'Host Election' tab.</p>
         </div> `
     }
 
 }
 
 
-async function getAllMyActiveElections(){
-    let elections = await sendRequest(`${server}/api/elections`, "GET")
-    displayMyActiveElections(elections)
-}
+  async function displayMyPastElections(clubID){
+    let pastElections= document.querySelector('#clubPastElections')
+    pastElections.innerHTML=""
+    let elections = await sendRequest(`${server}/api/clubs/${clubID}/getPastElections`, "GET")
+    
+    console.log(elections)
+    for(election of elections){
+      //WIP
+      //needs closed elections to test
+      pastElections.innerHTML+=
+      `
+      <div class="jumbotron">
+        <h1 class="display-4">Election Winner: ${election["electionWinner"]}</h1>
+        <p class="lead">Position: ${election["position"]}</p>
+        <p class="lead">End Date: ${election["Election End Date"]}</p>
+        <hr class="my-4">
+        <p class="lead">
+        <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+        </p>
+      </div>
+      `
+    }      
+  }
 
 async function joinClub(clubID){
     let response = await sendRequest(`${server}/api/clubs/${clubID}`, "POST")
@@ -296,7 +504,7 @@ async function castVote(event, electionID){
 
     let form = event.target
     let checkedElement
-    
+
     for(element of form){
         if(element.checked)
             checkedElement = element.value
@@ -329,6 +537,7 @@ function main(){
     document.querySelector("#club-tab").addEventListener("click", getAllClubs)
     document.querySelector("#myClubs-tab").addEventListener("click", getAllMyClubs)
     document.querySelector("#activeElections-tab").addEventListener("click", getAllMyActiveElections)
+    document.querySelector("#pastElections-tab").addEventListener("click", getMyPastElections)
     let logoutButton = document.querySelector("#logoutButton")
     logoutButton.addEventListener("click", logout)
     $('.toast').toast({"delay" : 3000})

@@ -163,7 +163,13 @@ class User(db.Model):
         
         return cand.toDict()
 
+    def viewMyClubElections(self):
+        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
+        
+        if not membership:
+            return False
 
+        return membership.viewMyClubElections()
 
 
     def leaveClub(self, clubID):
@@ -333,7 +339,6 @@ class Election(db.Model):
         for candidate in electionCandidates:
             votes = db.session.query(ElectionBallot).filter_by(candidateID=candidate.candidateID).all()
             candidate.finalNumVotes = len(votes)
-
             try:
                 db.session.add(candidate)
                 db.session.commit()
@@ -352,7 +357,8 @@ class Election(db.Model):
         if not electionCandidates:
             print("No candidates for this election!")
             return False
-        '''
+        
+        #FIXXXX: Any election that ends on a tie remains a tie after it is reopened
         for candidate in electionCandidates:
             try:
                 candidate.finalNumVotes = len(db.session.query(ElectionBallot).filter_by(candidateID=candidate.candidateID).all())
@@ -360,11 +366,15 @@ class Election(db.Model):
                 db.session.commit()
             except:
                 db.session.rollback()
-        '''
+        
         voteData = [candidate.finalNumVotes for candidate in electionCandidates]
         highestVotes = max(voteData)
-        winningNumberOfVotes = [x for x in voteData if x==highestVotes]
 
+        print(voteData)
+
+        winningNumberOfVotes = [x for x in voteData if x==highestVotes]
+        
+        #Even the lower 2 votes may cause a tie. 1, 0, 0. 0 0 counts as tie.
         if len(voteData) != len(set(voteData)):
             print("There has been a tie!")
             try:

@@ -1,1 +1,0 @@
-const server = "https://info2602ps--snickdx.repl.co";
