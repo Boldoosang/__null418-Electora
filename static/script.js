@@ -228,7 +228,7 @@ async function displayMyActiveElections(myElections){
                                                         <div class="col-sm-8 pl-0">
                                                             <div class="card-body col-sm-12">
                                                                 <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
-                                                                <p class="card-text">This </p>
+                                                                <p class="card-text">${candidate["numVotes"]} votes</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -245,13 +245,13 @@ async function displayMyActiveElections(myElections){
                                                     <div class="card-body">
                                                         <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
                                                         <div class="collapse" id="election-${clubElection["electionID"]}">
-                                                            <form>
+                                                            <form onsubmit = "castVote(event, ${clubElection["electionID"]})">
                                                                 <div class="row">
                                                                     ${listOfCandidates}
                                                                 </div>
                                                                 <div class="text-center mt-4">
                                                                     <hr class="my-4">
-                                                                    <a style="width: 50%;" type="submit" class="btn btn-primary" onclick="castVote(${clubElection["electionID"]})" role="button">Cast Vote</a>
+                                                                    <input type="submit" style="width: 50%;" value="Cast Vote" class="btn btn-primary" role="button">
                                                                 </div>
                                                             </form>
                                                         </div>
@@ -291,7 +291,19 @@ async function joinClub(clubID){
     }
 }
 
-async function castVote(electionID, candidateID){
+async function castVote(event, electionID){
+    event.preventDefault()
+
+    let form = event.target
+    let checkedElement
+    
+    for(element of form){
+        if(element.checked)
+            checkedElement = element.value
+    }
+
+    let candidateID = checkedElement
+
     let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "POST")
     if ("error" in response){
         updateModalContent("Vote for Candidate", `${response["error"]}`)
