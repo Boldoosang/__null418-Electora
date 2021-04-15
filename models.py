@@ -322,7 +322,7 @@ class Election(db.Model):
             "clubID" : self.clubID,
             "clubName" : club.clubName,
             "position" : self.position,
-            "electionEndDate" : None if not self.electionEndDate else self.electionEndDate.strftime("%d-%m-%Y"),
+            "electionEndDate" : None if not self.electionEndDate else self.electionEndDate.strftime("%m-%d-%Y"),
             "hostMemberID" : self.memberID,
             "isOpen" : self.isOpen,
             "electionWinner" : self.electionWinner,
@@ -357,8 +357,7 @@ class Election(db.Model):
         if not electionCandidates:
             print("No candidates for this election!")
             return False
-        
-        #FIXXXX: Any election that ends on a tie remains a tie after it is reopened
+
         for candidate in electionCandidates:
             try:
                 candidate.finalNumVotes = len(db.session.query(ElectionBallot).filter_by(candidateID=candidate.candidateID).all())
@@ -370,12 +369,9 @@ class Election(db.Model):
         voteData = [candidate.finalNumVotes for candidate in electionCandidates]
         highestVotes = max(voteData)
 
-        print(voteData)
-
         winningNumberOfVotes = [x for x in voteData if x==highestVotes]
         
-        #Even the lower 2 votes may cause a tie. 1, 0, 0. 0 0 counts as tie.
-        if len(voteData) != len(set(voteData)):
+        if len(winningNumberOfVotes) != len(set(winningNumberOfVotes)):
             print("There has been a tie!")
             try:
                 self.electionWinner = "Tie"

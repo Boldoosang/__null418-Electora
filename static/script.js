@@ -242,13 +242,13 @@ async function displayMyActiveElections(myElections){
                         } else
                             continue
                         for(candidate of clubElection.candidates)
-                            listOfCandidates += `<div class="card mt-3 col-sm-6">
-                                                    <div class="row">
-                                                        <div class="col-md-2 text-center h-100 card-img-top">
-                                                            <input class="h-100 w-100 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
+                            listOfCandidates += `<div class="card mt-3 bg-dark col-lg-5">
+                                                    <div class="row d-flex align-items-center">
+                                                        <div class="d-flex align-items-center col-xs-2 h-75 w-25">
+                                                            <input class="h-100 w-75 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
                                                         </div>
-                                                        <div class="col-sm-8 pl-0">
-                                                            <div class="card-body col-sm-12">
+                                                        <div class="col-xs-10 pl-0">
+                                                            <div class="card-body col-xs-12">
                                                                 <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
                                                                 <p class="card-text">${candidate["numVotes"]} votes</p>
                                                             </div>
@@ -268,7 +268,7 @@ async function displayMyActiveElections(myElections){
                                                         <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
                                                         <div class="collapse" id="election-${clubElection["electionID"]}">
                                                             <form onsubmit = "castVote(event, ${clubElection["electionID"]})">
-                                                                <div class="row">
+                                                                <div class="row justify-content-between">
                                                                     ${listOfCandidates}
                                                                 </div>
                                                                 <div class="text-center mt-4">
@@ -295,7 +295,6 @@ async function displayMyActiveElections(myElections){
             <h5>No Active Elections</h5>
             <p>Sorry, but there are currently no available active elections. You can start an election in the 'Host Election' tab.</p>
         </div> `
-        updateModalContent("View Active Elections", `No active elections!`)
     }
 
 }
@@ -331,20 +330,22 @@ async function getMyPastElections(){
             <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
         </div> `
     } else {
-        pastElectionsArea.innerHTML = ` <div class="row w-100">
-                                            <div class="col-3 my-3">
-                                                <nav class="nav flex-column" id="clubList">
-                                                    <div class="navbar" id="clubPastElections">
-                                                        <ul id="pastElectionClubList" class="navbar-nav ml-auto"></ul>
-                                                    </div>
-                                                </nav>
-                                            </div>
-                                            <div class="col-sm-9 my-3" id="pastElectionDisplayArea">
-                                                <div class="col-sm-12 mt-3 text-center">
-                                                    <h5>Please Select a Club</h5>
-                                                </div>
-                                            </div>
-                                        </div>
+
+        pastElectionsArea.innerHTML = ` 
+        
+            <div class="container row d-flex justify-content-center mt-3">
+                <div class="col-lg-4">
+                    <div class="bg-light nav flex-column nav-pills p-3 mt-3" id="pastElectionClubList" role="tablist"></div>
+                </div>
+                <div class="col-lg-8" id="pastElectionDisplayArea">
+                    <div class="col-sm-12 mt-3 text-center">
+                        <h5>Select a club</h5>
+                        <p>To view the election details of previous elections, please select a club from the menu.</p>
+                    </div>
+                </div>
+
+            </div>
+        
                                         `
         displayMyPastElectionsMenu(myClubs)
     }
@@ -356,11 +357,8 @@ async function displayMyPastElectionsMenu(myClubs){
 
     if(myClubs != null && myClubs.length > 0){
         for(myClub of myClubs){
-            listOfClubs += `<li class="nav-item">
-                                <a value="${myClub["clubID"]}" id="" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})" class="peClubList nav-link" href="#">${myClub["clubName"]}</a>
-                            </li> `
-            
-        }
+            listOfClubs += ` <a role="tab" data-toggle="pill"  value="${myClub["clubID"]}" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})"  class="peClubList nav-link" href="#">${myClub["clubName"]}</a>`
+        }   
         pastElectionClubList.innerHTML = listOfClubs
     } else {
         let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
@@ -373,7 +371,6 @@ async function displayMyPastElectionsMenu(myClubs){
 
 }
 
-//Up next
 async function displayMyPastElectionsDetails(clubID){
     let pastElectionDisplayArea = document.querySelector("#pastElectionDisplayArea")
     let myPastElections = await sendRequest(`${server}/api/elections`, "GET")
@@ -387,12 +384,12 @@ async function displayMyPastElectionsDetails(clubID){
         if(myPastElections[0] == null)
         myPastElections = null
     }
-
+    //LIST OF CANDIDATES NOT CLEARING
     if((myPastElections != null)) {
         if(myPastElections.length > 0){
             for(clubElections of myPastElections){
                 if(clubElections != null){
-                    listOfCandidates = ""
+                    clubElections.reverse()
                     for(clubElection of clubElections){
                         if(clubElection.clubID == clubID){
                             let electionStatus = `<h3>Open Election</h3>`
@@ -401,8 +398,10 @@ async function displayMyPastElectionsDetails(clubID){
                                 closedCount++;
                             } else
                                 continue
-
+                            
+                            listOfCandidates = ""
                             for(candidate of clubElection.candidates){
+                                
                                 var cardColor;
                                 if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
                                     cardColor = "bg-success"
@@ -410,15 +409,19 @@ async function displayMyPastElectionsDetails(clubID){
                                     cardColor = "bg-secondary"
                                 else
                                     cardColor = "bg-danger"
-                                    
-                                listOfCandidates += `<div class="card mt-3 mx-3 col-sm-5 ${cardColor}">
+                                
+                                listOfCandidates += `<div class="card mt-3 col-lg-5 ${cardColor}">
                                                         <div class="card-body col-sm-12">
                                                             <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
                                                             <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
                                                         </div>
                                                     </div>`
                             }
+                            
+                            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                            let electionDate = new Date(clubElection["electionEndDate"])
 
+                            electionDate = electionDate.toLocaleDateString("en-TT", options)
                             listOfElections += `<div class="col-sm-12 mt-3">
                                                 <div class="card">
                                                     <div class="jumbotron">
@@ -426,10 +429,10 @@ async function displayMyPastElectionsDetails(clubID){
                                                         <h2 class="display-4">${clubElection["position"]}</h2>
                                                         <p class="lead">${clubElection["clubName"]}</p>
                                                         <hr class="my-4">
-                                                        <h5>${electionStatus}</h5>
+                                                        <h5>${electionStatus}${electionDate}</h5>
                                                     </div>
                                                     <div class="card-body">
-                                                        <a style="width: 100%;" class="btn btn-info" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Election Details</a>
+                                                        <a class="w-100 btn btn-info" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Election Details</a>
                                                         <div class="collapse" id="election-${clubElection["electionID"]}">
                                                             <form onsubmit = "generateElectionGraph(event, ${clubElection["electionID"]})">
                                                                 <div class="row justify-content-between">
