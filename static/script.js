@@ -325,7 +325,7 @@ async function getMyPastElections(){
     if(!window.localStorage.getItem("access_token")){
         updateModalContent("Past Elections", `Not logged in!`)
         pastElectionsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center">
             <h5>Not logged in!</h5>
             <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
         </div> `
@@ -476,8 +476,6 @@ async function displayMyPastElectionsDetails(clubID){
     
     console.log(elections)
     for(election of elections){
-      //WIP
-      //needs closed elections to test
       pastElections.innerHTML+=
       `
       <div class="jumbotron">
