@@ -474,7 +474,6 @@ async function displayMyPastElectionsDetails(clubID){
     pastElections.innerHTML=""
     let elections = await sendRequest(`${server}/api/clubs/${clubID}/getPastElections`, "GET")
     
-    console.log(elections)
     for(election of elections){
       pastElections.innerHTML+=
       `
@@ -532,12 +531,415 @@ async function leaveClub(clubID){
     getAllMyClubs()
 }
 
+async function displayElectionsManager(){
+    let optionList=document.querySelector('#electionOptions')
+
+    if(!window.localStorage.getItem("access_token")){
+      optionList.innerHTML=""
+      displayNotLoggedIn()
+
+    }else{
+    optionList.innerHTML=`
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="closeElection()">Close Election</button>
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
+      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
+      `
+    }
+}
+
+async function displayNotLoggedIn(){
+    let content=document.querySelector('#hostElectionContentArea')
+    content.innerHTML=
+    `<div class="col-sm-12 mt-3 text-center">
+          <h5>Not logged in!</h5>
+          <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
+      </div> `
+}
+
+async function displayAddElection(){
+    let content=document.querySelector('#electionContent')
+    content.innerHTML=
+    `
+    <form id="createElectionForm">
+      <div class="form-group">
+        <label for="clubInput">Choose Club</label>
+        <select class="form-control" id="clubInput"></select>
+      </div>
+      
+      <div class="form-group">
+        <label for="positionInput">Election Position</label>
+        <input type="text" class="form-control" id="positionInput">
+      </div>
+
+      <div id="candidate">
+        <div class="form-group" id="candidate">
+          <label for="nameInput">Candidate Name</label>
+          <input type="text" class="form-control" placeholder="First Name">
+          <input type="text" class="form-control" placeholder="Last Name">
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-outline-primary" onClick="addCandidate()">Add Candidate</button>
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Begin Election</button>
+    </form>
+    `
+
+    let clubOptions=document.querySelector("#clubInput")
+    clubOptions.innerHTML= "<option selected>Choose...</option>"
+
+    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    for(club of myClubs){
+      clubOptions.innerHTML+=`<option value="${club['clubID']}">${club["clubName"]}</option>`
+    }
+
+    document.forms["createElectionForm"].addEventListener("submit", createElection)
+}
+
+async function addCandidateToExisting(){
+    let content=document.querySelector('#electionContent')
+
+    content.innerHTML=`
+    <form id="AddCandidateChooseElection">
+      <div class="form-group">
+      <label for="electionInput">Choose Election</label>
+      <select class="form-control" id="electionInput"></select>
+      </div> 
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+    </form>
+    `
+
+    let electionOptions=document.querySelector("#electionInput")
+
+    let electionss = await sendRequest(`${server}/api/elections`, "GET")
+
+    let elections = electionss[0]
+
+    for(election of elections){
+        if(election['isOpen'] == true){
+            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        }
+    }
+
+    document.forms["AddCandidateChooseElection"].addEventListener("submit", async function(event){
+        event.preventDefault()
+        let form = event.target.elements
+
+        electionID = form['electionInput'].value
+
+        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
+
+        let newForm = document.querySelector("#electionContent")
+
+        newForm.innerHTML+=`
+            <form id="AddCandidateChoose">
+                <div class="form-group">
+                    <label for="candidateInput">Choose Candidate</label>
+                    <select class="form-control" id="candidateInput"></select>
+                </div>
+
+                <div class="form-group" id="newFname">
+                    <label for="fnameInput">New First Name</label>
+                    <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
+                </div>
+
+                <div class="form-group" id="newLname">
+                    <label for="lnameInput">New Last Name</label>
+                    <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
+                </div>
+                <button id="candidateSubmit" type="submit" class="btn btn-primary">Add Candidate</button>
+            </form>
+            `
+        
+        let candidateOptions=document.querySelector("#candidateInput")
+
+        for(candidate of candidates){
+                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+        }
+
+        document.forms["AddCandidateChoose"].addEventListener("submit", async function(event){
+            event.preventDefault()
+            let form = event.target.elements
+
+            let data = {
+                firstName: form['fnameInput'].value,
+                lastName: form['lnameInput'].value
+            }
+            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "POST", data)
+        })
+    })
+}
+
+async function deleteElection(){
+    let content=document.querySelector('#electionContent')
+
+    content.innerHTML=`
+    <form id="deleteElectionForm">
+      <div class="form-group">
+        <label for="electionInput">Choose Election</label>
+        <select class="form-control" id="electionInput"></select>
+      </div> 
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Close Election</button>
+    </form>
+    `
+    let electionOptions=document.querySelector("#electionInput")
+
+    let electionss = await sendRequest(`${server}/api/elections`, "GET")
+
+    let elections = electionss[0]
+
+    for(election of elections){
+        if(election['isOpen'] == true){
+            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        }
+    }
+    document.forms["deleteElectionForm"].addEventListener("submit", async function(event){
+        event.preventDefault()
+        let form = event.target.elements
+
+        let electionID = form['electionInput'].value
+        
+        let response = await sendRequest(`${server}/api/elections/${electionID}`, "DELETE")
+        })
+}
+
+async function removeCandidate(){
+    let content=document.querySelector('#electionContent')
+
+    content.innerHTML=`
+    <form id="removeCandidateChooseElection">
+      <div class="form-group">
+      <label for="electionInput">Choose Election</label>
+      <select class="form-control" id="electionInput"></select>
+      </div> 
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+    </form>
+    `
+
+    let electionOptions=document.querySelector("#electionInput")
+
+    let electionss = await sendRequest(`${server}/api/elections`, "GET")
+
+    let elections = electionss[0]
+
+    for(election of elections){
+
+        if(election['isOpen'] == true){
+            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        }
+    }
+
+    document.forms["removeCandidateChooseElection"].addEventListener("submit", async function(event){
+        event.preventDefault()
+        let form = event.target.elements
+
+        electionID = form['electionInput'].value
+
+        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
+
+        let newForm = document.querySelector("#electionContent")
+
+        newForm.innerHTML+=`
+            <form id="removeCandidateChoose">
+                <div class="form-group">
+                    <label for="candidateInput">Choose Candidate</label>
+                    <select class="form-control" id="candidateInput"></select>
+                </div> 
+                <button id="candidateSubmit" type="submit" class="btn btn-primary">Remove Candidate</button>
+            </form>
+            `
+        
+        let candidateOptions=document.querySelector("#candidateInput")
+
+        for(candidate of candidates){
+                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+        }
+
+        document.forms["removeCandidateChoose"].addEventListener("submit", async function(event){
+            event.preventDefault()
+            let form = event.target.elements
+
+            let candidateID = form['candidateInput'].value
+
+            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
+        })
+    })    
+}
+
+async function updateCandidate(){
+    let content=document.querySelector('#electionContent')
+
+    content.innerHTML=`
+    <form id="updateCandidateChooseElection">
+      <div class="form-group">
+      <label for="electionInput">Choose Election</label>
+      <select class="form-control" id="electionInput"></select>
+      </div> 
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+    </form>
+    `
+
+    let electionOptions=document.querySelector("#electionInput")
+
+    let electionss = await sendRequest(`${server}/api/elections`, "GET")
+
+    let elections = electionss[0]
+
+    for(election of elections){
+        if(election['isOpen'] == true){
+            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        }
+    }
+
+    document.forms["updateCandidateChooseElection"].addEventListener("submit", async function(event){
+        event.preventDefault()
+        let form = event.target.elements
+
+        electionID = form['electionInput'].value
+
+
+        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
+
+        let newForm = document.querySelector("#electionContent")
+
+        newForm.innerHTML+=`
+            <form id="updateCandidateChoose">
+                <div class="form-group">
+                    <label for="candidateInput">Choose Candidate</label>
+                    <select class="form-control" id="candidateInput"></select>
+                </div>
+
+                <div class="form-group" id="newFname">
+                    <label for="fnameInput">New First Name</label>
+                    <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
+                </div>
+
+                <div class="form-group" id="newLname">
+                    <label for="lnameInput">New Last Name</label>
+                    <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
+                </div>
+                <button id="candidateSubmit" type="submit" class="btn btn-primary">Update Candidate</button>
+            </form>
+            `
+        
+        let candidateOptions=document.querySelector("#candidateInput")
+
+        for(candidate of candidates){
+                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+        }
+
+        document.forms["updateCandidateChoose"].addEventListener("submit", async function(event){
+            event.preventDefault()
+            let form = event.target.elements
+
+            let candidateID = form['candidateInput'].value
+
+            let data = {
+                firstName: form['fnameInput'].value,
+                lastName: form['lnameInput'].value
+            }
+
+            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
+        })
+    })
+}
+
+async function closeElection(){
+    let content=document.querySelector('#electionContent')
+    content.innerHTML=`
+    <form id="closeElectionForm">
+      <div class="form-group">
+        <label for="electionInput">Choose Election</label>
+        <select class="form-control" id="electionInput"></select>
+      </div> 
+      <button id="electionSubmit" type="submit" class="btn btn-primary">Close Election</button>
+    </form>
+    `
+    let electionOptions=document.querySelector("#electionInput")
+
+    let electionss = await sendRequest(`${server}/api/elections`, "GET")
+
+    let elections = electionss[0]
+
+    for(election of elections){
+        if(election['isOpen'] == true){
+            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        }
+    }
+    document.forms["closeElectionForm"].addEventListener("submit", async function(event){
+        event.preventDefault()
+        let form = event.target.elements
+
+        let data= {
+            clubID: form['electionInput'].value
+        }
+        //add close election route
+        //let response = await sendRequest(`${server}/api/elections`, "POST", data)
+        })
+}
+
+async function addCandidate(){
+    let content=document.querySelector('#candidate')
+
+    content.innerHTML+=
+    `
+        <div class="form-group" id="candidate">
+          <label for="nameInput">Candidate Name</label>
+          <input type="text" class="form-control" placeholder="First Name">
+          <input type="text" class="form-control" placeholder="Last Name">
+        </div>
+    `
+}
+
+async function createElection(event){
+    event.preventDefault()
+    const names = document.querySelector('#candidate')
+    let fields = names.querySelectorAll('input')
+    let cnames = []
+    let name = []
+    let fname
+    let lname
+    i=0
+
+    for(field of fields){
+      if(i==0){
+        fname = field['value']  
+        i=1
+        continue
+      }
+      if(i==1){
+        lname = field['value']
+        name={
+          "firstName": fname,
+          "lastName": lname
+        }
+        
+        cnames.push(name)
+        name = {}
+        i=0
+      }
+    }
+
+    let form = event.target.elements
+    
+    let data={
+      clubID: form['clubInput'].value,
+      position: form['positionInput'].value,
+      candidates: cnames
+    }
+
+    let response = await sendRequest(`${server}/api/elections`, "POST", data)
+  }
+
 function main(){
     document.forms["signUpForm"].addEventListener("submit", signUp)
     document.forms["loginForm"].addEventListener("submit", login)
     document.querySelector("#club-tab").addEventListener("click", getAllClubs)
     document.querySelector("#myClubs-tab").addEventListener("click", getAllMyClubs)
     document.querySelector("#activeElections-tab").addEventListener("click", getAllMyActiveElections)
+    document.querySelector("#hostElection-tab").addEventListener("click", displayElectionsManager)
     document.querySelector("#pastElections-tab").addEventListener("click", getMyPastElections)
     let logoutButton = document.querySelector("#logoutButton")
     logoutButton.addEventListener("click", logout)
