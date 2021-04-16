@@ -22,5 +22,8 @@
     "url": "https://github.com/Boldoosang/__null418-Electora/issues"
   },
   "homepage": "https://electora.justinbaldeo.com",
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "bcrypt": "^5.0.1"
+  }
 }

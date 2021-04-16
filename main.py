@@ -12,8 +12,6 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
 
-
-
 #from flask import Flask, request, render_template, redirect, flash, url_for
 #from flask_jwt import JWT, jwt_required, get_jwt_identity()
 from sqlalchemy.exc import IntegrityError
@@ -64,6 +62,7 @@ def authenticate(username, password):
   user = User.query.filter_by(username=username).first()
   if user and user.checkPassword(password):
     return user
+  return None
 
 def identity(payload):
   return User.query.get(payload['identity'])
@@ -159,23 +158,14 @@ def register():
 def login():
   loginDetails = request.get_json()
   if not loginDetails["username"] and not loginDetails["password"]:
-    return json.dumps({"error" : "Please ensure all the data is entered for registration"})
-  
-  if len(loginDetails["password"]) <= 6:
-    return json.dumps({"error" : "Password too short!"})
+    return json.dumps({"error" : "Please ensure all the data is entered for login!"})
 
-  if loginDetails["password"] != regDetails["confirmPassword"]:
-    return json.dumps({"error" : "Passwords do not match!"})
-
-  try:
-    newUser = User(regDetails["username"], regDetails["password"], regDetails["firstName"], regDetails["lastName"])
-    db.session.add(newUser)
-    db.session.commit()
-
-    return json.dumps({"message" : "Successfully signed up!"})
-  except:
-    db.session.rollback()
-    return json.dumps({"error" : "Error registering user! User may already exist!"})
+#try:
+  if authenticate(loginDetails["username"], loginDetails["password"]):
+    access_token = create_access_token(identity={"username": loginDetails["username"]})
+    return json.dumps({"access_token" : access_token})
+#except:
+  return json.dumps({"error" : "Invalid login credentials or the user does not exist!"})
 
 @app.route('/identify', methods=["GET"])
 @jwt_required()
