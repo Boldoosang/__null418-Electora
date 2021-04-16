@@ -84,6 +84,7 @@ def getPastElections(clubID):
 
 @app.route('/api/clubs/<clubID>', methods=["GET"])
 def getClubsByID(clubID):
+  clubID = int(clubID)
   foundClub = db.session.query(Club).filter_by(clubID=clubID).first()
   if not foundClub:
     return None
