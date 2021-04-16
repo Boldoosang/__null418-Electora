@@ -48,13 +48,13 @@ app.app_context().push()
 
 ''' Set up JWT here (if using flask JWT)'''
 def authenticate(username, password):
-  user = User.query.filter_by(username=username).first()
+  user = db.session.query(User).filter_by(username=username).first()
   print(user)
   if user and user.checkPassword(password):
     return user
 
 def identity(payload):
-  return User.query.get(payload['identity'])
+  return db.session.query().get(payload['identity'])
 
 jwt = JWT(app, authenticate, identity)
 ''' End JWT Setup '''
