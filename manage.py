@@ -79,14 +79,39 @@ def editClubImage(clubName, clubImage):
 def removeClub(clubName):
     if clubName:
         deletionClub = db.session.query(Club).filter_by(clubName=clubName).first()
+
         if deletionClub:
-            #try:
-            db.session.delete(deletionClub)
-            db.session.commit()
-            print("Successfully removed club from database!")
-            #except:
-            db.session.rollback()
-            print("Unable to remove club from database!")
+
+            elections = db.session.query(Election).filter_by(clubID=deletionClub.clubID).all()
+            if elections:
+                for election in elections:
+                    try:
+                        db.session.delete(election)
+                        db.session.commit()
+                        print("Successfully deleted election from database!")
+                    except:
+                        db.session.rollback()
+                        print("Unable to delete election from database!")
+
+            clubMembers = db.session.query(ClubMember).filter_by(clubID=deletionClub.clubID).all()
+            if clubMembers:
+                for clubMember in clubMembers:
+                    try:
+                        db.session.delete(clubMember)
+                        db.session.commit()
+                        print("Successfully deleted club member from database!")
+                    except:
+                        db.session.rollback()
+                        print("Unable to delete club member from database!")
+            try:
+                db.session.delete(deletionClub)
+                db.session.commit()
+                print("Successfully removed club from database!")
+            except:
+                db.session.rollback()
+                print("Unable to remove club from database!")
+        else:
+            print("Unable to find club in database!")
     else:
         print("No club name provided!")
 
