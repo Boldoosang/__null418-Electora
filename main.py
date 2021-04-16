@@ -6,7 +6,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.exc import IntegrityError
 from datetime import timedelta 
 
-from models import db, Club, Election, User, ClubMember, Candidate, ElectionBallot #add application models
+from models import db, Club, Election, User, ClubMember, Candidate, ElectionBallot
 
 ''' Begin boilerplate code '''
 
@@ -20,12 +20,11 @@ from models import db, Club, Election, User, ClubMember, Candidate, ElectionBall
 
 def create_app():
   app = Flask(__name__, static_url_path='')
-  app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+  app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///electoraDB.db'
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
   app.config['SECRET_KEY'] = "MYSECRET"
   app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7)
   CORS(app)
-#   login_manager.init_app(app) # uncomment if using flask login
   db.init_app(app)
   return app
 
@@ -59,6 +58,10 @@ def clientApp():
 @app.route('/api/clubs', methods=["GET"])
 def getClubs():
   clubs = db.session.query(Club).all()
+  if not clubs:
+    print("No clubs!")
+    return json.dumps({"error": "No clubs have been added yet!"})
+
   listOfClubs = [club.toDict() for club in clubs]
   return json.dumps(listOfClubs)
 
@@ -308,5 +311,7 @@ def deleteCandidate(electionID, candidateID):
   else:
     return json.dumps({"message" : "Unable to delete candidate from election!"})
 
+
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8080, debug=True)
+  print("Application running in " + app.config["ENV"] + " mode")
+  app.run(host='0.0.0.0', port=8080, debug=app.config["ENV"]=='development')

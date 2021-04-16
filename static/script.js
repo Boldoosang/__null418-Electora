@@ -5,22 +5,24 @@ let username
 
 async function sendRequest(url, method, data){
     try {
-    let token = window.localStorage.getItem('access_token')
+        let token = window.localStorage.getItem('access_token')
 
-    let options = {
-        "method" : method,
-        "headers" : {
-        "Content-Type" : "application/json",
-        "Authorization" : `JWT ${token}`
+        let options = {
+            "method" : method,
+            "headers" : {
+            "Content-Type" : "application/json",
+            "Authorization" : `JWT ${token}`
+            }
         }
-    }
 
-    if(data)
-        options.body = JSON.stringify(data)
+        if(data)
+            options.body = JSON.stringify(data)
 
         let response = await fetch(url, options)
 
         let result = await response.json()
+            
+        console.log(result)   
 
         return result
     } catch (e) {
@@ -158,7 +160,19 @@ async function displayClubs(clubs){
 
 async function getAllClubs(){
     let clubs = await sendRequest(`${server}/api/clubs`, "GET")
-    displayClubs(clubs)
+
+    let clubDisplayArea = document.querySelector("#clubDisplayArea")
+
+    if ("error" in clubs){
+        updateModalContent("View My Clubs", `No clubs yet!`)
+        clubDisplayArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center"">
+            <h5>No clubs have been created!</h5>
+            <p>Sorry, but there hasn't been any clubs added to this application.</p>
+        </div> `
+    } else {
+        displayMyClubs(clubs)
+    }
 }
 
 

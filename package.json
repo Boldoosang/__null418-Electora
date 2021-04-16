@@ -1,0 +1,25 @@
+{
+  "name": "electora",
+  "version": "1.0.0",
+  "description": "__null418 University of the West Indies INFO 2602 Final Project",
+  "scripts": {
+    "init": "python manage.py initDB",
+    "serve": "python manage.py serve",
+    "addClub": "python manage.py addClub",
+    "editClubImage": "python manage.py editClubImage",
+    "editClubDescription": "python manage.py editClubDescription",
+    "removeClub": "python manage.py removeClub"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Boldoosang/__null418-Electora.git"
+  },
+  "keywords": [],
+  "author": "Justin Baldeosingh, Tevon Thatcher, Brandon Bharath",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Boldoosang/__null418-Electora/issues"
+  },
+  "homepage": "https://electora.justinbaldeo.com",
+  "main": "index.js"
+}
