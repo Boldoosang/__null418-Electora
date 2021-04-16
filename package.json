@@ -8,7 +8,8 @@
     "addClub": "python manage.py addClub",
     "editClubImage": "python manage.py editClubImage",
     "editClubDescription": "python manage.py editClubDescription",
-    "removeClub": "python manage.py removeClub"
+    "removeClub": "python manage.py removeClub",
+    "resetDatabase": "python manage.py resetDatabase"
   },
   "repository": {
     "type": "git",

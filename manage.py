@@ -117,5 +117,11 @@ def removeClub(clubName):
     else:
         print("No club name provided!")
 
+@manager.command
+def resetDatabase():
+    pass
+    print("Unable to clear database completely!")
+
+
 if __name__ == "__main__":
     manager.run()

@@ -11,22 +11,22 @@ from models import db, Club, Election, User, ClubMember, Candidate, ElectionBall
 
 ''' Begin boilerplate code '''
 
-def get_db_uri(scheme='sqlite://', user='', password='', host='//demo.db', port='', name=''):
+def get_db_uri(scheme='sqlite://', user='', password='', host='//electoraDB.db', port='', name=''):
   return scheme+'://'+user+':'+password+'@'+host+':'+port+'/'+name 
 
 def loadConfig(app):
   try:
-      app.config.from_object('config', static_url_path="/static")
-      app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri() if app.config['SQLITEDB'] else app.config['DBURI']
+      app.config.from_object('config.production')
   except:
-      print("config file not present using environment variables")
+      print("No config file used. Using environment variables.")
       DBUSER = os.environ.get("DBUSER")
       DBPASSWORD = os.environ.get("DBPASSWORD")
       DBHOST = os.environ.get("DBHOST")
       DBPORT = os.environ.get("DBPORT", default="8080")
       DBNAME = os.environ.get("DBNAME")
       DBURI = os.environ.get("DBURI")
-      SQLITEDB = os.environ.get("SQLITEDB", default="true")
+      SQLITEDB = os.environ.get("SQLITEDB", default="False")
+
       app.config['ENV'] = os.environ.get("ENV", default="")
       app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri() if SQLITEDB in {'True', 'true', 'TRUE'} else DBURI
 
@@ -34,10 +34,6 @@ def loadConfig(app):
 def create_app():
   app = Flask(__name__)
   loadConfig(app)
-  app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///electoraDB.db'
-  app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-  app.config['SECRET_KEY'] = "SUPER_SECRET_KEY"
-  app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7)
   CORS(app)
   db.init_app(app)
   return app
