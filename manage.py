@@ -80,15 +80,13 @@ def removeClub(clubName):
     if clubName:
         deletionClub = db.session.query(Club).filter_by(clubName=clubName).first()
         if deletionClub:
-            try:
-                db.session.delete(deletionClub)
-                db.session.commit()
-                print("Successfully removed club from database!")
-            except:
-                db.session.rollback()
-                print("Unable to remove club from database!")
-        else:
-            print("Unable to find club in database!")
+            #try:
+            db.session.delete(deletionClub)
+            db.session.commit()
+            print("Successfully removed club from database!")
+            #except:
+            db.session.rollback()
+            print("Unable to remove club from database!")
     else:
         print("No club name provided!")
 

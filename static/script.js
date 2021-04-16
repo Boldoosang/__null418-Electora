@@ -171,7 +171,7 @@ async function getAllClubs(){
             <p>Sorry, but there hasn't been any clubs added to this application.</p>
         </div> `
     } else {
-        displayMyClubs(clubs)
+        displayClubs(clubs)
     }
 }
 
@@ -715,9 +715,7 @@ async function deleteElection(){
     let elections = electionss[0]
 
     for(election of elections){
-        if(election['isOpen'] == true){
-            electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
-        }
+        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
     }
     document.forms["deleteElectionForm"].addEventListener("submit", async function(event){
         event.preventDefault()
@@ -896,11 +894,13 @@ async function closeElection(){
         event.preventDefault()
         let form = event.target.elements
 
-        let data= {
-            clubID: form['electionInput'].value
+        clubID = form['electionInput'].value
+
+        data = {
+            "isOpen" : false
         }
-        //add close election route
-        //let response = await sendRequest(`${server}/api/elections`, "POST", data)
+
+        let response = await sendRequest(`${server}/api/elections/${clubID}`, "PUT", data)
         })
 }
 
