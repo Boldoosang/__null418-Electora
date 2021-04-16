@@ -45,10 +45,10 @@ async function login(event){
     let result = await sendRequest(`${server}/auth`, "POST", data)
 
     if("error" in result) {
-        updateModalContent("Login", `Login failed! ${result["error"]}.`)
+        updateToastContent("Login", `Login failed! ${result["error"]}.`)
     } else {
         console.log("Logged in successfully!")
-        updateModalContent("Login", `Login successful!`)
+        updateToastContent("Login", `Login successful!`)
 
         window.localStorage.setItem('access_token', result['access_token']);
         window.location = `${server}`
@@ -79,20 +79,20 @@ async function signUp(event){
 
     if("error" in result) {
         console.log("Sign up failed! " + result["error"])
-        updateModalContent("Electora Registration", `Sign up failed! ${result["error"]}.`)
+        updateToastContent("Electora Registration", `Sign up failed! ${result["error"]}.`)
     } else {
-        updateModalContent("Electora Registration", `${result["message"]}.`)
+        updateToastContent("Electora Registration", `${result["message"]}.`)
         console.log("Signed up successfully!")
     }
     $('#signUpModal').modal('hide')
 }
 
-function updateModalContent(newModalTitle, newModalContent){
-    let modalTitle = document.querySelector("#genericModalTitle")
-    let modalBody = document.querySelector("#genericModalMessage")
+function updateToastContent(newModalTitle, newModalContent){
+    let toastTitle = document.querySelector("#genericToastTitle")
+    let toastBody = document.querySelector("#genericToastMessage")
 
-    modalTitle.innerHTML = newModalTitle
-    modalBody.innerHTML = newModalContent
+    toastTitle.innerHTML = newModalTitle
+    toastBody.innerHTML = newModalContent
     $('.toast').toast("show")
 }
 
@@ -101,9 +101,9 @@ function logout(){
     accessToken = window.localStorage.getItem("access_token");
     if(accessToken){
         window.localStorage.removeItem('access_token');
-        updateModalContent("Logout", "Succesfully logged out!")
+        updateToastContent("Logout", "Succesfully logged out!")
     } else {
-        updateModalContent("Logout", "You were not logged in!")
+        updateToastContent("Logout", "You were not logged in!")
     }
     determineSessionContext()
     window.location = `${server}`
@@ -162,15 +162,17 @@ async function getAllClubs(){
 
     let clubDisplayArea = document.querySelector("#clubDisplayArea")
 
-    if ("error" in clubs){
-        updateModalContent("View My Clubs", `No clubs yet!`)
-        clubDisplayArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
-            <h5>No clubs have been created!</h5>
-            <p>Sorry, but there hasn't been any clubs added to this application.</p>
-        </div> `
-    } else {
-        displayClubs(clubs)
+    if(clubs != null){
+        if ("error" in clubs){
+            updateToastContent("View My Clubs", `No clubs yet!`)
+            clubDisplayArea.innerHTML = 
+            `<div class="col-sm-12 mt-3 text-center"">
+                <h5>No clubs have been created!</h5>
+                <p>Sorry, but there hasn't been any clubs added to this application.</p>
+            </div> `
+        } else {
+            displayClubs(clubs)
+        }
     }
 }
 
@@ -209,7 +211,7 @@ async function getAllMyClubs(){
     let myClubsArea = document.querySelector("#myClubsDisplayArea")
     try {
         if ("error" in myClubs){
-            updateModalContent("View My Clubs", `Not logged in!`)
+            updateToastContent("View My Clubs", `Not logged in!`)
             myClubsArea.innerHTML = 
             `<div class="col-sm-12 mt-3 text-center"">
                 <h5>Not logged in!</h5>
@@ -220,7 +222,7 @@ async function getAllMyClubs(){
         }
     } catch(e){
         //Error generated when there are no clubs
-        updateModalContent("View My Clubs", `No clubs yet!`)
+        updateToastContent("View My Clubs", `No clubs yet!`)
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center"">
             <h5>No clubs have been created!</h5>
@@ -317,7 +319,7 @@ async function getAllMyActiveElections(){
     let elections = await sendRequest(`${server}/api/elections`, "GET")
 
     if(!window.localStorage.getItem("access_token")){
-        updateModalContent("View Active Elections", `Not logged in!`)
+        updateToastContent("View Active Elections", `Not logged in!`)
         activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
         activeElectionsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center"">
@@ -335,7 +337,7 @@ async function getMyPastElections(){
     let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
 
     if(!window.localStorage.getItem("access_token")){
-        updateModalContent("Past Elections", `Not logged in!`)
+        updateToastContent("Past Elections", `Not logged in!`)
         pastElectionsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
             <h5>Not logged in!</h5>
@@ -520,9 +522,9 @@ async function displayMyPastElectionsDetails(clubID){
 async function joinClub(clubID){
     let response = await sendRequest(`${server}/api/clubs/${clubID}`, "POST")
     if ("error" in response){
-        updateModalContent("Join Club", `${response["error"]}`)
+        updateToastContent("Join Club", `${response["error"]}`)
     } else {
-        updateModalContent("Join Club", `${response["message"]}`)
+        updateToastContent("Join Club", `${response["message"]}`)
     }
 }
 
@@ -541,9 +543,9 @@ async function castVote(event, electionID){
 
     let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "POST")
     if ("error" in response){
-        updateModalContent("Vote for Candidate", `${response["error"]}`)
+        updateToastContent("Vote for Candidate", `${response["error"]}`)
     } else {
-        updateModalContent("Vote for Candidate", `${response["message"]}`)
+        updateToastContent("Vote for Candidate", `${response["message"]}`)
     }
     getAllMyActiveElections()
 }
@@ -551,9 +553,9 @@ async function castVote(event, electionID){
 async function leaveClub(clubID){
     let response = await sendRequest(`${server}/api/myClubs/${clubID}`, "DELETE")
     if ("error" in response){
-        updateModalContent("Leave Club", `${response["error"]}`)
+        updateToastContent("Leave Club", `${response["error"]}`)
     } else {
-        updateModalContent("Leave Club", `${response["message"]}`)
+        updateToastContent("Leave Club", `${response["message"]}`)
     }
     getAllMyClubs()
 }

@@ -39,7 +39,7 @@ def addClub(clubName, clubDescription, clubImage):
 @manager.command
 def editClubDescription(clubName, clubDescription):
     if clubName:
-        newClub = db.session.query(Club).filter_by(clubName=clubName)
+        newClub = db.session.query(Club).filter_by(clubName=clubName).first()
         if not newClub:
             return "Unable to find club by that name."
     
@@ -58,7 +58,7 @@ def editClubDescription(clubName, clubDescription):
 @manager.command
 def editClubImage(clubName, clubImage):
     if clubName:
-        newClub = db.session.query(Club).filter_by(clubName=clubName)
+        newClub = db.session.query(Club).filter_by(clubName=clubName).first()
         if not newClub:
             return "Unable to find club by that name."
     
