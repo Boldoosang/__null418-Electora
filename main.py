@@ -26,10 +26,8 @@ def loadConfig(app):
       DBNAME = os.environ.get("DBNAME")
       DBURI = os.environ.get("DBURI")
       SQLITEDB = os.environ.get("SQLITEDB", default="False")
-      PROPAGATE_EXCEPTIONS = os.environ.get("PROPAGATE_EXCEPTIONS", default="True")
 
       app.config['ENV'] = os.environ.get("ENV", default="")
-      app.config['PROPAGATE_EXCEPTIONS'] = PROPAGATE_EXCEPTIONS
       app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri() if SQLITEDB in {'True', 'true', 'TRUE'} else DBURI
 
 
@@ -49,12 +47,11 @@ app.app_context().push()
 ''' Set up JWT here (if using flask JWT)'''
 def authenticate(username, password):
   user = db.session.query(User).filter_by(username=username).first()
-  print(user)
   if user and user.checkPassword(password):
     return user
 
 def identity(payload):
-  return db.session.query().get(payload['identity'])
+  return db.session.query(User).get(payload['identity'])
 
 jwt = JWT(app, authenticate, identity)
 ''' End JWT Setup '''
