@@ -136,6 +136,7 @@ async function determineSessionContext(){
 async function displayClubs(clubs){
     clubArea = document.querySelector("#clubDisplayArea")
     let listOfClubs = ""
+    console.log(clubs)
     if(clubs.length > 0){  
         for(club of clubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
@@ -171,7 +172,8 @@ async function getAllClubs(){
             <p>Sorry, but there hasn't been any clubs added to this application.</p>
         </div> `
     } else {
-        displayMyClubs(clubs)
+        
+        displayClubs(clubs)
     }
 }
 
