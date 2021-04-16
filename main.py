@@ -321,4 +321,3 @@ def deleteCandidate(electionID, candidateID):
     return json.dumps({"message" : "Candidate has been deleted from the election!"})
   else:
     return json.dumps({"message" : "Unable to delete candidate from election!"})
-
