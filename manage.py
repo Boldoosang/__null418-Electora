@@ -39,12 +39,12 @@ def addClub(clubName, clubDescription, clubImage):
 @manager.command
 def editClubDescription(clubName, clubDescription):
     if clubName:
-        club = db.session.query(Club).filer_by(clubName=clubName)
-        if not club:
+        newClub = db.session.query(Club).filter_by(clubName=clubName)
+        if not newClub:
             return "Unable to find club by that name."
     
         if clubDescription:
-            club.clubDescription = clubDescription
+            newClub.clubDescription = clubDescription
             try:
                 db.session.add(newClub)
                 db.session.commit()
@@ -58,16 +58,16 @@ def editClubDescription(clubName, clubDescription):
 @manager.command
 def editClubImage(clubName, clubImage):
     if clubName:
-        club = db.session.query(Club).filer_by(clubName=clubName)
-        if not club:
+        newClub = db.session.query(Club).filter_by(clubName=clubName)
+        if not newClub:
             return "Unable to find club by that name."
     
-        if clubDescription:
-            club.clubImage = clubImage
+        if clubImage:
+            newClub.clubImage = clubImage
             try:
                 db.session.add(newClub)
                 db.session.commit()
-                pprint("Successfully updated club image!")
+                print("Successfully updated club image!")
             except:
                 db.session.rollback()
                 print("Unable to update club image!")
