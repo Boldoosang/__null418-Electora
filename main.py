@@ -29,6 +29,7 @@ def loadConfig(app):
 
       app.config['ENV'] = os.environ.get("ENV", default="")
       app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri() if SQLITEDB in {'True', 'true', 'TRUE'} else DBURI
+      app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 
 
 def create_app():
