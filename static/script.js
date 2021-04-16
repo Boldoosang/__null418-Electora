@@ -22,7 +22,6 @@ async function sendRequest(url, method, data){
 
         let result = await response.json()
             
-        console.log(result)   
 
         return result
     } catch (e) {
@@ -136,7 +135,6 @@ async function determineSessionContext(){
 async function displayClubs(clubs){
     clubArea = document.querySelector("#clubDisplayArea")
     let listOfClubs = ""
-    console.log(clubs)
     if(clubs.length > 0){  
         for(club of clubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
@@ -335,7 +333,6 @@ async function getAllMyActiveElections(){
 
 
 async function getMyPastElections(){
-    console.log("Clicked")
     let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
     let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
 
@@ -387,12 +384,13 @@ async function displayMyPastElectionsMenu(myClubs){
     }
 
 }
-
+var graphCandidates = []
 async function displayMyPastElectionsDetails(clubID){
     let pastElectionDisplayArea = document.querySelector("#pastElectionDisplayArea")
     let myPastElections = await sendRequest(`${server}/api/elections`, "GET")
     let closedCount = 0;
     let listOfElections = ""
+
     
     if(myPastElections != null){
         myPastElections.filter(function (el) {
@@ -417,8 +415,8 @@ async function displayMyPastElectionsDetails(clubID){
                                 continue
                             
                             listOfCandidates = ""
+                            graphCandidates = []
                             for(candidate of clubElection.candidates){
-                                
                                 var cardColor;
                                 if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
                                     cardColor = "bg-success"
@@ -433,6 +431,7 @@ async function displayMyPastElectionsDetails(clubID){
                                                             <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
                                                         </div>
                                                     </div>`
+                                graphCandidates.push(candidate)
                             }
                             
                             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -457,7 +456,7 @@ async function displayMyPastElectionsDetails(clubID){
                                                                 </div>
                                                                 <div class="text-center mt-4">
                                                                     <hr class="my-4">
-                                                                    <a style="width: 25%;" class="btn btn-info" href="#" data-toggle="modal" data-target="#electionResultModal">More Info</a>
+                                                                    <a style="width: 25%;" class="btn btn-info" href="#" data-toggle="modal" data-target="#electionResultModal" onclick="electionPieChart(graphCandidates)" id="electionPieChart">More Info</a>
                                                                     <a style="width: 25%;" class="btn btn-danger" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Close</a>
                                                                 </div>
                                                             </form>
@@ -484,6 +483,19 @@ async function displayMyPastElectionsDetails(clubID){
     }
 
 }
+ function electionPieChart(graphCandidates){
+    var data = []
+    for (candidate of graphCandidates){
+        rec = {x: candidate["firstName"], value: candidate["finalNumVotes"]}
+        data.push(rec)
+    }
+    var chart = anychart.pie()
+    chart.title("Pie Chart of Election Results")
+    chart.data(data)
+    chart.container('electionResultPieChart')
+    chart.draw()
+ }
+
 
 
   async function displayMyPastElections(clubID){
