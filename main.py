@@ -16,7 +16,7 @@ def get_db_uri(scheme='sqlite://', user='', password='', host='//demo.db', port=
 
 def loadConfig(app):
   try:
-      app.config.from_object('config')
+      app.config.from_object('config', static_url_path="/static")
       app.config['SQLALCHEMY_DATABASE_URI'] = get_db_uri() if app.config['SQLITEDB'] else app.config['DBURI']
   except:
       print("config file not present using environment variables")

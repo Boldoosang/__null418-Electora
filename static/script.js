@@ -164,15 +164,17 @@ async function getAllClubs(){
 
     let clubDisplayArea = document.querySelector("#clubDisplayArea")
 
-    if ("error" in clubs){
-        updateModalContent("View My Clubs", `No clubs yet!`)
-        clubDisplayArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
-            <h5>No clubs have been created!</h5>
-            <p>Sorry, but there hasn't been any clubs added to this application.</p>
-        </div> `
-    } else {
-        displayClubs(clubs)
+    if(clubs != null){
+        if ("error" in clubs){
+            updateModalContent("View My Clubs", `No clubs yet!`)
+            clubDisplayArea.innerHTML = 
+            `<div class="col-sm-12 mt-3 text-center"">
+                <h5>No clubs have been created!</h5>
+                <p>Sorry, but there hasn't been any clubs added to this application.</p>
+            </div> `
+        } else {
+            displayClubs(clubs)
+        }
     }
 }
 
