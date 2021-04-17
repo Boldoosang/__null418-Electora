@@ -71,7 +71,7 @@ class User(db.Model):
         allMyManagingElections = []
 
         for membership in memberships:
-            listOfMyClubElections = membership.myElections()
+            listOfMyClubElections = membership.myManagingElections()
             for clubElection in listOfMyClubElections:
                 allMyManagingElections.append(clubElection)
 

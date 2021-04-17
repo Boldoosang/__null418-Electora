@@ -147,7 +147,7 @@ def register():
 @jwt_required()
 def identify():
   #try:
-    return json.dumps({"username" : current_identity.username})
+    return json.dumps({"username" : current_identity.username, "firstName" : current_identity.firstName, "lastName" : current_identity.lastName})
   #except:
     return json.dumps({"error" : "Not logged in or session has expired!"})
 
