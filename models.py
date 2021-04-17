@@ -68,11 +68,14 @@ class User(db.Model):
     def myManagingElections(self):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
-        if not memberships:
-            return None
+        allMyManagingElections = []
 
-        listOfMyElections = [membership.myManagingElections() for membership in memberships]
-        return listOfMyElections
+        for membership in memberships:
+            listOfMyClubElections = membership.myElections()
+            for clubElection in listOfMyClubElections:
+                allMyManagingElections.append(clubElection)
+
+        return allMyManagingElections
 
     def changePosition(self, electionID, position):
         membership = db.session.query(ClubMember).filter_by(id=self.id).first()
@@ -110,8 +113,6 @@ class User(db.Model):
             listOfMyClubElections = membership.myElections()
             for clubElection in listOfMyClubElections:
                 allMyElections.append(clubElection)
-        
-        print(allMyElections)
 
         return allMyElections
 
