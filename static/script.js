@@ -1,5 +1,5 @@
-//const server = "https://electora.herokuapp.com"
-const server = "http://localhost:8080"
+const server = "https://electora.herokuapp.com"
+//const server = "http://localhost:8080"
 console.log(server)
 let username
 
@@ -64,11 +64,11 @@ async function signUp(event){
     let fields = event.target.elements
 
     let data = {
-    "username" : fields["regUsername"].value,
-    "firstName" : fields["firstName"].value,
-    "lastName" : fields["lastName"].value,
-    "password" : fields["regPassword"].value,
-    "confirmPassword" : fields["confirmPassword"].value
+        "username" : fields["regUsername"].value,
+        "firstName" : fields["firstName"].value,
+        "lastName" : fields["lastName"].value,
+        "password" : fields["regPassword"].value,
+        "confirmPassword" : fields["confirmPassword"].value
     }
 
     console.log(data)
@@ -236,6 +236,8 @@ async function displayMyActiveElections(myElections){
     activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
     let listOfElections = ""
     let openElections = 0
+
+    /*
     if(myElections != null){
         myElections.filter(function (el) {
             return el != null;
@@ -243,64 +245,60 @@ async function displayMyActiveElections(myElections){
         if(myElections[0] == null)
             myElections = null
     }
+    */
 
     if((myElections != null)) {
         if(myElections.length > 0){
-            for(clubElections of myElections){
-                if(clubElections != null){
-                    listOfCandidates = ""
-                    for(clubElection of clubElections){
-                        let electionStatus = `<h3>Closed Election</h3>`
-                        if(clubElection.isOpen){
-                            electionStatus = `<h3>Open Election</h3>`
-                            openElections++
-                        } else
-                            continue
-                        for(candidate of clubElection.candidates)
-                            listOfCandidates += `<div class="card mt-3 bg-dark col-lg-5">
-                                                    <div class="row d-flex align-items-center">
-                                                        <div class="d-flex align-items-center col-xs-2 h-75 w-25">
-                                                            <input class="h-100 w-75 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
-                                                        </div>
-                                                        <div class="col-xs-10 pl-0">
-                                                            <div class="card-body col-xs-12">
-                                                                <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
-                                                                <p class="card-text">${candidate["numVotes"]} votes</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>`
-
-                        listOfElections += `<div class="col-sm-12 mt-3">
-                                                <div class="card">
-                                                    <div class="jumbotron">
-                                                        <h1 class="display-4">${clubElection["position"]}</h1>
-                                                        <p class="lead">${clubElection["clubName"]}</p>
-                                                        <hr class="my-4">
-                                                        <h5>${electionStatus}</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
-                                                        <div class="collapse" id="election-${clubElection["electionID"]}">
-                                                            <form onsubmit = "castVote(event, ${clubElection["electionID"]})">
-                                                                <div class="row justify-content-between">
-                                                                    ${listOfCandidates}
-                                                                </div>
-                                                                <div class="text-center mt-4">
-                                                                    <hr class="my-4">
-                                                                    <input type="submit" style="width: 50%;" value="Cast Vote" class="btn btn-primary" role="button">
-                                                                </div>
-                                                            </form>
-                                                        </div>
+            for(clubElection of myElections){
+                listOfCandidates = ""
+                let electionStatus = `<h3>Closed Election</h3>`
+                if(clubElection.isOpen){
+                    electionStatus = `<h3>Open Election</h3>`
+                    openElections++
+                } else
+                    continue
+                for(candidate of clubElection.candidates)
+                    listOfCandidates += `<div class="card mt-3 bg-dark col-lg-5">
+                                            <div class="row d-flex align-items-center">
+                                                <div class="d-flex align-items-center col-xs-2 h-75 w-25">
+                                                    <input class="h-100 w-75 ml-3 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
+                                                </div>
+                                                <div class="col-xs-10 pl-0">
+                                                    <div class="card-body col-xs-12">
+                                                        <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                        <p class="card-text">${candidate["numVotes"]} votes</p>
                                                     </div>
                                                 </div>
-                                            </div> `
-                        
-                    }
-                    activeElectionsArea.innerHTML = listOfElections
-                }
+                                            </div>
+                                        </div>`
+
+                listOfElections += `<div class="col-sm-12 mt-3">
+                                        <div class="card">
+                                            <div class="jumbotron">
+                                                <h1 class="display-4">${clubElection["position"]}</h1>
+                                                <p class="lead">${clubElection["clubName"]}</p>
+                                                <hr class="my-4">
+                                                <h5>${electionStatus}</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <a style="width: 100%;" class="btn btn-success" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Vote</a>
+                                                <div class="collapse" id="election-${clubElection["electionID"]}">
+                                                    <form onsubmit = "castVote(event, ${clubElection["electionID"]})">
+                                                        <div class="row justify-content-between">
+                                                            ${listOfCandidates}
+                                                        </div>
+                                                        <div class="text-center mt-4">
+                                                            <hr class="my-4">
+                                                            <input type="submit" style="width: 50%;" value="Cast Vote" class="btn btn-primary" role="button">
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> `
                 
             }
+            activeElectionsArea.innerHTML = listOfElections
             
         } 
     } 
@@ -316,9 +314,10 @@ async function displayMyActiveElections(myElections){
 
 //Does not show appropriate message for closed elections
 async function getAllMyActiveElections(){
-    let elections = await sendRequest(`${server}/api/elections`, "GET")
+    
+    identification = await sendRequest(`${server}/identify`, "GET")
 
-    if(!window.localStorage.getItem("access_token")){
+    if("error" in identification){
         updateToastContent("View Active Elections", `Not logged in!`)
         activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
         activeElectionsArea.innerHTML = 
@@ -327,16 +326,18 @@ async function getAllMyActiveElections(){
             <p>Sorry, but you need to be logged in to view the active elections.</p>
         </div> `
     } else {
+        let elections = await sendRequest(`${server}/api/elections`, "GET")
+        console.log("test")
+        console.log(elections)
         displayMyActiveElections(elections)
     }
 }
 
 
 async function getMyPastElections(){
-    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    identification = await sendRequest(`${server}/identify`, "GET")
     let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
-
-    if(!window.localStorage.getItem("access_token")){
+    if("error" in identification){
         updateToastContent("Past Elections", `Not logged in!`)
         pastElectionsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
@@ -344,7 +345,7 @@ async function getMyPastElections(){
             <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
         </div> `
     } else {
-
+        let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
         pastElectionsArea.innerHTML = ` 
         
             <div class="container row d-flex justify-content-center mt-3">
@@ -384,6 +385,7 @@ async function displayMyPastElectionsMenu(myClubs){
     }
 
 }
+
 var graphCandidates = []
 async function displayMyPastElectionsDetails(clubID){
     let pastElectionDisplayArea = document.querySelector("#pastElectionDisplayArea")
@@ -391,7 +393,7 @@ async function displayMyPastElectionsDetails(clubID){
     let closedCount = 0;
     let listOfElections = ""
 
-    
+    /*
     if(myPastElections != null){
         myPastElections.filter(function (el) {
             return el != null;
@@ -399,78 +401,74 @@ async function displayMyPastElectionsDetails(clubID){
         if(myPastElections[0] == null)
         myPastElections = null
     }
-    //LIST OF CANDIDATES NOT CLEARING
+    */
+
     if((myPastElections != null)) {
         if(myPastElections.length > 0){
-            for(clubElections of myPastElections){
-                if(clubElections != null){
-                    clubElections.reverse()
-                    for(clubElection of clubElections){
-                        if(clubElection.clubID == clubID){
-                            let electionStatus = `<h3>Open Election</h3>`
-                            if(!clubElection.isOpen) {
-                                electionStatus = `<h3>Closed Election</h3>`
-                                closedCount++;
-                            } else
-                                continue
-                            
-                            listOfCandidates = ""
-                            graphCandidates = []
-                            for(candidate of clubElection.candidates){
-                                var cardColor;
-                                if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
-                                    cardColor = "bg-success"
-                                else if("Tie" == clubElection.electionWinner)
-                                    cardColor = "bg-secondary"
-                                else
-                                    cardColor = "bg-danger"
-                                
-                                listOfCandidates += `<div class="card mt-3 col-lg-5 ${cardColor}">
-                                                        <div class="card-body col-sm-12">
-                                                            <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
-                                                            <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
-                                                        </div>
-                                                    </div>`
-                                graphCandidates.push(candidate)
-                            }
-                            
-                            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                            let electionDate = new Date(clubElection["electionEndDate"])
-
-                            electionDate = electionDate.toLocaleDateString("en-TT", options)
-                            listOfElections += `<div class="col-sm-12 mt-3">
-                                                <div class="card">
-                                                    <div class="jumbotron">
-                                                        <h1 style="font-size: 4em;">${clubElection["electionWinner"]}</h1>
-                                                        <h2 class="display-4">${clubElection["position"]}</h2>
-                                                        <p class="lead">${clubElection["clubName"]}</p>
-                                                        <hr class="my-4">
-                                                        <h5>${electionStatus}${electionDate}</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <a class="w-100 btn btn-info" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Election Details</a>
-                                                        <div class="collapse" id="election-${clubElection["electionID"]}">
-                                                            <form onsubmit = "generateElectionGraph(event, ${clubElection["electionID"]})">
-                                                                <div class="row justify-content-between">
-                                                                    ${listOfCandidates}
-                                                                </div>
-                                                                <div class="text-center mt-4">
-                                                                    <hr class="my-4">
-                                                                    <a style="width: 25%;" class="btn btn-info" href="#" data-toggle="modal" data-target="#electionResultModal" onclick="electionPieChart(graphCandidates)" id="electionPieChart">More Info</a>
-                                                                    <a style="width: 25%;" class="btn btn-danger" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Close</a>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
+            myPastElections.reverse()
+            for(clubElection of myPastElections){
+                if(clubElection.clubID == clubID){
+                    let electionStatus = `<h3>Open Election</h3>`
+                    if(!clubElection.isOpen) {
+                        electionStatus = `<h3>Closed Election</h3>`
+                        closedCount++;
+                    } else
+                        continue
+                    
+                    listOfCandidates = ""
+                    graphCandidates = []
+                    for(candidate of clubElection.candidates){
+                        var cardColor;
+                        if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
+                            cardColor = "bg-success"
+                        else if("Tie" == clubElection.electionWinner)
+                            cardColor = "bg-secondary"
+                        else
+                            cardColor = "bg-danger"
+                        
+                        listOfCandidates += `<div class="card mt-3 col-lg-5 ${cardColor}">
+                                                <div class="card-body col-sm-12">
+                                                    <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                    <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
                                                 </div>
-                                            </div> `
-                            //
-                        }
+                                            </div>`
+                        graphCandidates.push(candidate)
                     }
-                    pastElectionDisplayArea.innerHTML = listOfElections
+                    
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    let electionDate = new Date(clubElection["electionEndDate"])
+
+                    electionDate = electionDate.toLocaleDateString("en-TT", options)
+                    listOfElections += `<div class="col-sm-12 mt-3">
+                                        <div class="card">
+                                            <div class="jumbotron">
+                                                <h1 style="font-size: 4em;">${clubElection["electionWinner"]}</h1>
+                                                <h2 class="display-4">${clubElection["position"]}</h2>
+                                                <p class="lead">${clubElection["clubName"]}</p>
+                                                <hr class="my-4">
+                                                <h5>${electionStatus}${electionDate}</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <a class="w-100 btn btn-info" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Election Details</a>
+                                                <div class="collapse" id="election-${clubElection["electionID"]}">
+                                                    <form onsubmit = "generateElectionGraph(event, ${clubElection["electionID"]})">
+                                                        <div class="row justify-content-between">
+                                                            ${listOfCandidates}
+                                                        </div>
+                                                        <div class="text-center mt-4">
+                                                            <hr class="my-4">
+                                                            <a style="width: 25%;" class="btn btn-info" href="#" data-toggle="modal" data-target="#electionResultModal" onclick="electionPieChart(graphCandidates)" id="electionPieChart">More Info</a>
+                                                            <a style="width: 25%;" class="btn btn-danger" data-toggle="collapse" href="#election-${clubElection["electionID"]}" role="button">Close</a>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> `
+                    //
                 }
-                
             }
+            pastElectionDisplayArea.innerHTML = listOfElections
             
         } 
     }
