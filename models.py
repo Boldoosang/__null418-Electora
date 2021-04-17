@@ -62,7 +62,12 @@ class User(db.Model):
     
     def myClubs(self):
         myClubs = db.session.query(ClubMember).filter_by(id=self.id).all()
+
+        if not myClubs:
+            return None
+        
         listOfMyClubs = [club.toDict() for club in myClubs]
+
         return listOfMyClubs
     
     def myManagingElections(self):
@@ -105,15 +110,17 @@ class User(db.Model):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
         
         if not memberships:
-            return
+            return None
 
         allMyElections = []
 
         for membership in memberships:
             listOfMyClubElections = membership.myElections()
-            for clubElection in listOfMyClubElections:
-                allMyElections.append(clubElection)
 
+            if listOfMyClubElections:
+                for clubElection in listOfMyClubElections:
+                    allMyElections.append(clubElection)
+            
         return allMyElections
 
     def viewElection(self, electionID):
@@ -139,13 +146,13 @@ class User(db.Model):
 
         if not election:
             print("Election does not eixst!")
-            return []
+            return None
 
         clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=self.id).first()
 
-        if not election:
+        if not clubMembership:
             print("User does not have permission to view these candidates!")
-            return []
+            return None
         
         candidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
 
@@ -497,6 +504,7 @@ class ClubMember(db.Model):
                 except:
                     db.session.rollback()
                     print("Unable to add " + candidate["firstName"] + " " + candidate["lastName"] + " to database!")
+                    return False
         except:
             print("Unable to add election to database!")
             db.session.rollback()
