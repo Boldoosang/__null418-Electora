@@ -693,7 +693,6 @@ class ClubMember(db.Model):
         
         return True
 
-
 class ElectionBallot(db.Model):
     ballotID = db.Column(db.Integer, primary_key=True)
     memberID = db.Column(db.Integer, db.ForeignKey("club_member.memberID"))
