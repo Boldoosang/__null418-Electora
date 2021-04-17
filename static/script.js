@@ -190,6 +190,7 @@ async function displayMyClubs(myClubs){
         
         myClubsArea.innerHTML = listOfClubs
     } else {
+        updateToastContent("No Joined Clubs", `Sorry, but you are not a member of any club.`)
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
             <h5>No Joined Clubs</h5>
