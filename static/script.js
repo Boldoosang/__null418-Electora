@@ -1,4 +1,8 @@
-
+try {
+    const server = "https://electora.herokuapp.com"
+} catch(e){
+    console.log("Using development server.")
+}
 console.log(server)
 let username
 
