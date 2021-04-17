@@ -104,8 +104,16 @@ class User(db.Model):
         if not memberships:
             return
 
-        listOfMyElections = [membership.myElections() for membership in memberships]
-        return listOfMyElections
+        allMyElections = []
+
+        for membership in memberships:
+            listOfMyClubElections = membership.myElections()
+            for clubElection in listOfMyClubElections:
+                allMyElections.append(clubElection)
+        
+        print(allMyElections)
+
+        return allMyElections
 
     def viewElection(self, electionID):
         memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
