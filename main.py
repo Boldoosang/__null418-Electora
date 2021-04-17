@@ -175,9 +175,6 @@ def getCandidatesDebug():
   listOfCandidates = [candidate.toDict() for candidate in candidates]
   return json.dumps(listOfCandidates)
 
-
-
-
 @app.route('/api/elections', methods=["GET"])
 @jwt_required()
 def getMyElections():
