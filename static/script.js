@@ -664,11 +664,6 @@ async function addCandidateToExisting(){
 
         newForm.innerHTML+=`
             <form id="AddCandidateChoose">
-                <div class="form-group">
-                    <label for="candidateInput">Choose Candidate</label>
-                    <select class="form-control" id="candidateInput"></select>
-                </div>
-
                 <div class="form-group" id="newFname">
                     <label for="fnameInput">New First Name</label>
                     <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
@@ -681,13 +676,8 @@ async function addCandidateToExisting(){
                 <button id="candidateSubmit" type="submit" class="btn btn-primary">Add Candidate</button>
             </form>
             `
-        
-        let candidateOptions=document.querySelector("#candidateInput")
 
-        for(candidate of candidates){
-                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
-        }
-
+        event.target.reset() 
         document.forms["AddCandidateChoose"].addEventListener("submit", async function(event){
             event.preventDefault()
             let form = event.target.elements
@@ -697,7 +687,13 @@ async function addCandidateToExisting(){
                 lastName: form['lnameInput'].value
             }
             let response = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "POST", data)
-        })
+            event.target.reset()
+            if('error' in response)
+                updateToastContent("Add Candidate", "Candidate could not be added")
+            else{ 
+                updateToastContent("Add Candidate", "Candidate was successfully added")
+            }
+        }) 
     })
 }
 
@@ -715,11 +711,13 @@ async function deleteElection(){
     `
     let electionOptions=document.querySelector("#electionInput")
 
-    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    console.log(electionss)
+    let elections = electionss
         for(election of elections){
             if(election){
-                if(election[0]['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                if(election['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
                 }
             }
         }
@@ -730,6 +728,7 @@ async function deleteElection(){
         let electionID = form['electionInput'].value
         
         let response = await sendRequest(`${server}/api/elections/${electionID}`, "DELETE")
+        event.target.reset()
         })
 }
 
@@ -748,11 +747,13 @@ async function removeCandidate(){
 
     let electionOptions=document.querySelector("#electionInput")
 
-    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    console.log(electionss)
+    let elections = electionss
         for(election of elections){
             if(election){
-                if(election[0]['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                if(election['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
                 }
             }
         }
@@ -790,8 +791,16 @@ async function removeCandidate(){
             let candidateID = form['candidateInput'].value
 
             let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
+            
+            removeCandidate()
+
+            if('error' in response)
+                updateToastContent("Remove Candidate", "Candidate could not be removed")
+            else{ 
+                updateToastContent("Remove Candidate", "Candidate was successfully removed")
+            }
         })
-    })    
+    })  
 }
 
 async function updateCandidate(){
@@ -809,11 +818,13 @@ async function updateCandidate(){
 
     let electionOptions=document.querySelector("#electionInput")
 
-    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    console.log(electionss)
+    let elections = electionss
         for(election of elections){
             if(election){
-                if(election[0]['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                if(election['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
                 }
             }
         }
@@ -867,6 +878,7 @@ async function updateCandidate(){
             }
 
             let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
+            event.target.reset()
         })
     })
 }
@@ -884,11 +896,13 @@ async function closeElection(){
     `
     let electionOptions=document.querySelector("#electionInput")
 
-    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    console.log(electionss)
+    let elections = electionss
         for(election of elections){
             if(election){
-                if(election[0]['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                if(election['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
                 }
             }
         }
@@ -903,7 +917,9 @@ async function closeElection(){
         }
 
         let response = await sendRequest(`${server}/api/elections/${clubID}`, "PUT", data)
+        form.reset()
         })
+        
 }
 
 async function addCandidate(){
@@ -957,6 +973,7 @@ async function createElection(event){
     }
 
     let response = await sendRequest(`${server}/api/elections`, "POST", data)
+    event.target.reset()
   }
 
 function main(){
