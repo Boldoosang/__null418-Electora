@@ -3785,9 +3785,9 @@ input[type="button"].btn-block {
 }
 
 .custom-control-input:checked ~ .custom-control-label::before {
-  color: #fff;
-  border-color: #007bff;
-  background-color: #007bff;
+  color: black;
+  border-color: black;
+  background-color: black;
 }
 
 .custom-control-input:focus ~ .custom-control-label::before {
@@ -4296,7 +4296,7 @@ input[type="button"].btn-block {
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
   color: #fff;
-  background-color: #007bff;
+  background-color: #1c1f22;
 }
 
 .nav-fill > .nav-link,
