@@ -1,1 +1,1 @@
-const server = "http://localhost:8080"
+const server = "https://electora.herokuapp.com"

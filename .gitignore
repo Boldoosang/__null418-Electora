@@ -6,3 +6,4 @@ electoraDB.db
 .theia
 .vscode
 static/server.js
+server.js
