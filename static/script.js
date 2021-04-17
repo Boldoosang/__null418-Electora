@@ -1,4 +1,5 @@
 const server = "https://electora.herokuapp.com"
+//const server = "http://localhost:8080"
 console.log(server)
 let username
 
@@ -159,7 +160,7 @@ async function getAllClubs(){
         if ("error" in clubs){
             updateToastContent("View My Clubs", `No clubs yet!`)
             clubDisplayArea.innerHTML = 
-            `<div class="col-sm-12 mt-3 text-center"">
+            `<div class="col-sm-12 mt-3 text-center text-white">
                 <h5>No clubs have been created!</h5>
                 <p>Sorry, but there hasn't been any clubs added to this application.</p>
             </div> `
@@ -191,7 +192,7 @@ async function displayMyClubs(myClubs){
     } else {
         updateToastContent("No Joined Clubs", `Sorry, but you are not a member of any club.`)
         myClubsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No Joined Clubs</h5>
             <p>Sorry, but you are not a member of any club. You can join a club via the 'Clubs' tab.</p>
         </div> `
@@ -206,7 +207,7 @@ async function getAllMyClubs(){
         if ("error" in myClubs){
             updateToastContent("View My Clubs", `Not logged in!`)
             myClubsArea.innerHTML = 
-            `<div class="col-sm-12 mt-3 text-center"">
+            `<div class="col-sm-12 mt-3 text-center text-white">
                 <h5>Not logged in!</h5>
                 <p>Sorry, but you need to be logged in to view your clubs.</p>
             </div> `
@@ -217,7 +218,7 @@ async function getAllMyClubs(){
         //Error generated when there are no clubs
         updateToastContent("View My Clubs", `No clubs yet!`)
         myClubsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No clubs have been created!</h5>
             <p>Sorry, but there hasn't been any clubs added to this application.</p>
         </div> `
@@ -297,7 +298,7 @@ async function displayMyActiveElections(myElections){
     } 
     if(openElections <= 0){
         activeElectionsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No Active Elections</h5>
             <p>Sorry, but there are currently no available active elections. You can start an election in the 'Host Election' tab.</p>
         </div> `
@@ -314,7 +315,7 @@ async function getAllMyActiveElections(){
         updateToastContent("View Active Elections", `Not logged in!`)
         activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
         activeElectionsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>Not logged in!</h5>
             <p>Sorry, but you need to be logged in to view the active elections.</p>
         </div> `
@@ -331,7 +332,7 @@ async function getMyPastElections(){
     if("error" in identification){
         updateToastContent("Past Elections", `Not logged in!`)
         pastElectionsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>Not logged in!</h5>
             <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
         </div> `
@@ -369,7 +370,7 @@ async function displayMyPastElectionsMenu(myClubs){
     } else {
         let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
         pastElectionsArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No Joined Clubs</h5>
             <p>Sorry, but you are not a member of any club. You can join a club via the 'Clubs' tab to view past elections for this club.</p>
         </div> `
@@ -455,7 +456,7 @@ async function displayMyPastElectionsDetails(clubID){
     }
     if(closedCount <= 0){
         pastElectionDisplayArea.innerHTML = 
-        `<div class="col-sm-12 mt-3 text-center"">
+        `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No Past Elections for this Club</h5>
             <p>Sorry, but there are no past elections for this club. You can start an election by clicking on the 'Host Election' tab.</p>
         </div> `
@@ -553,15 +554,15 @@ async function displayElectionsManager(){
 
       let noLogin=document.querySelector('#hostElectionContentArea')
       noLogin.innerHTML=
-      `<div class="col-sm-12 mt-3 text-center">
+      `<div class="col-sm-12 mt-3 text-center text-white">
         <h5>Not logged in!</h5>
-        <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
+        <p>Sorry, but you need to be logged in to manage elections of your clubs.</p>
       </div>`
     }else if(myClubs.length == 0){
         optionList.innerHTML=""
         let noClubs=document.querySelector('#hostElectionContentArea')
         noClubs.innerHTML=
-        `<div class="col-sm-12 mt-3 text-center">
+        `<div class="col-sm-12 mt-3 text-center text-white">
           <h5>No Clubs</h5>
           <p>Sorry, but you need to be a member of a club to manage an election.</p>
         </div>`
