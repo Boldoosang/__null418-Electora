@@ -621,7 +621,7 @@ async function displayAddElection(){
 
     let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
     for(club of myClubs){
-      clubOptions.innerHTML+=`<option value="${club['clubID']}">${club["clubName"]}</option>`
+      clubOptions.innerHTML+=`<option class="text-white" value="${club['clubID']}">${club["clubName"]}</option>`
     }
 
     document.forms["createElectionForm"].addEventListener("submit", createElection)
@@ -700,7 +700,7 @@ async function addCandidateToExisting(){
 
 async function deleteElection(){
     let content=document.querySelector('#electionContent')
-
+    let html=""
     content.innerHTML=`
     <form id="deleteElectionForm">
       <div class="form-group">
