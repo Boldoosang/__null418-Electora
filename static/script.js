@@ -136,7 +136,7 @@ async function displayClubs(clubs){
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
                                   <h5 class="card-title text-info">${club["clubName"]}</h5>
-                                  <p class="card-text">${club["clubDescription"]}</p>
+                                  <p class="card-text text-white">${club["clubDescription"]}</p>
                                   <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-info">Join Club</a>
                                 </div>
                               </div>
@@ -179,10 +179,10 @@ async function displayMyClubs(myClubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
                               <div class="card">
                                 <img class="card-img-top" src="${myClub["clubImage"]}">
-                                <div class="card-body">
-                                  <h5 class="card-title">${myClub["clubName"]}</h5>
-                                  <p class="card-text">${myClub["clubDescription"]}</p>
-                                  <a href="#" onclick="leaveClub(${myClub["clubID"]})" class="btn btn-danger">Leave club</a>
+                                <div class="card-body bg-secondary">
+                                  <h5 class="card-title text-info">${myClub["clubName"]}</h5>
+                                  <p class="card-text text-white">${myClub["clubDescription"]}</p>
+                                  <a href="#" onclick="leaveClub(${myClub["clubID"]})" class="btn btn-info">Leave club</a>
                                 </div>
                               </div>
                             </div> `
@@ -190,6 +190,7 @@ async function displayMyClubs(myClubs){
         
         myClubsArea.innerHTML = listOfClubs
     } else {
+        updateToastContent("No Joined Clubs", `Sorry, but you are not a member of any club.`)
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
             <h5>No Joined Clubs</h5>
@@ -592,25 +593,25 @@ async function displayAddElection(){
     `
     <form id="createElectionForm">
       <div class="form-group">
-        <label for="clubInput">Choose Club</label>
+        <label for="clubInput" class="text-white">Choose Club</label>
         <select class="form-control" id="clubInput"></select>
       </div>
       
       <div class="form-group">
-        <label for="positionInput">Election Position</label>
+        <label for="positionInput" class="text-white">Election Position</label>
         <input type="text" class="form-control" id="positionInput">
       </div>
 
       <div id="candidate">
-        <div class="form-group" id="candidate">
-          <label for="nameInput">Candidate Name</label>
+        <div class="form-group" id="candidate" >
+          <label for="nameInput" class="text-white">Candidate Name</label>
           <input type="text" class="form-control" placeholder="First Name">
           <input type="text" class="form-control" placeholder="Last Name">
         </div>
       </div>
 
-      <button type="button" class="btn btn-outline-primary" onClick="addCandidate()">Add Candidate</button>
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Begin Election</button>
+      <button type="button" class="btn btn-outline-info" onClick="addCandidate()">Add Candidate</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Begin Election</button>
     </form>
     `
 
@@ -631,10 +632,10 @@ async function addCandidateToExisting(){
     content.innerHTML=`
     <form id="AddCandidateChooseElection">
       <div class="form-group">
-      <label for="electionInput">Choose Election</label>
+      <label for="electionInput" class="text-white">Choose Election</label>
       <select class="form-control" id="electionInput"></select>
       </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
     </form>
     `
 
@@ -706,10 +707,10 @@ async function deleteElection(){
     content.innerHTML=`
     <form id="deleteElectionForm">
       <div class="form-group">
-        <label for="electionInput">Choose Election</label>
+        <label for="electionInput" class="text-white">Choose Election</label>
         <select class="form-control" id="electionInput"></select>
       </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Close Election</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Delete Election</button>
     </form>
     `
     let electionOptions=document.querySelector("#electionInput")
@@ -738,10 +739,10 @@ async function removeCandidate(){
     content.innerHTML=`
     <form id="removeCandidateChooseElection">
       <div class="form-group">
-      <label for="electionInput">Choose Election</label>
+      <label for="electionInput" class="text-white">Choose Election</label>
       <select class="form-control" id="electionInput"></select>
       </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
     </form>
     `
 
@@ -799,10 +800,10 @@ async function updateCandidate(){
     content.innerHTML=`
     <form id="updateCandidateChooseElection">
       <div class="form-group">
-      <label for="electionInput">Choose Election</label>
+      <label for="electionInput" class="text-white">Choose Election</label>
       <select class="form-control" id="electionInput"></select>
       </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Select Election</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
     </form>
     `
 
@@ -875,10 +876,10 @@ async function closeElection(){
     content.innerHTML=`
     <form id="closeElectionForm">
       <div class="form-group">
-        <label for="electionInput">Choose Election</label>
+        <label for="electionInput" class="text-white">Choose Election</label>
         <select class="form-control" id="electionInput"></select>
       </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-primary">Close Election</button>
+      <button id="electionSubmit" type="submit" class="btn btn-info">Close Election</button>
     </form>
     `
     let electionOptions=document.querySelector("#electionInput")
