@@ -87,12 +87,12 @@ async function signUp(event){
     $('#signUpModal').modal('hide')
 }
 
-function updateToastContent(newModalTitle, newModalContent){
+function updateToastContent(newToastTitle, newToastContent){
     let toastTitle = document.querySelector("#genericToastTitle")
     let toastBody = document.querySelector("#genericToastMessage")
 
-    toastTitle.innerHTML = newModalTitle
-    toastBody.innerHTML = newModalContent
+    toastTitle.innerHTML = newToastTitle
+    toastBody.innerHTML = newToastContent
     $('.toast').toast("show")
 }
 
@@ -110,15 +110,15 @@ function logout(){
 }
 
 async function determineSessionContext(){
-    let token = window.localStorage.getItem("access_token")
+    identification = await sendRequest(`${server}/identify`, "GET")
     let logoutButton = document.querySelector("#logoutButton")
-    
-    if(token){
+
+    if(!("error" in identification)){
         username = await sendRequest(`${server}/identify`, "GET")
         logoutButton.innerText = "Logout"
         navbarLinks.innerHTML = `
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#">Logged in as ${username.username}!</a>
+                                    <a class="nav-link" href="#">Logged in as ${identification.username}!</a>
                                 </li>`
     } else {
         logoutButton.innerText = ""

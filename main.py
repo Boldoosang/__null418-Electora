@@ -146,7 +146,10 @@ def register():
 @app.route('/identify', methods=["GET"])
 @jwt_required()
 def identify():
-  return json.dumps({"username" : current_identity.username})
+  #try:
+    return json.dumps({"username" : current_identity.username})
+  #except:
+    return json.dumps({"error" : "Not logged in or session has expired!"})
 
 #Remove before production
 @app.route('/debug/elections', methods=["GET"])

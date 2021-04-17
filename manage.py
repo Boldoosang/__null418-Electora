@@ -14,6 +14,20 @@ manager.add_command('db', MigrateCommand)
 @manager.command
 def initDB():
     db.create_all(app=app)
+    clubs = []
+    clubs.append(Club(clubName="UWI Computing Society", clubDescription="The University of the West Indies Computing Society welcomes all who wish to partake in the discussion of new and innovative technologies of the modern world."))
+    clubs.append(Club(clubName="UWI Biological Society", clubDescription="The University of the West Indies Biological Society is an environmental conservation organization founded in 1987, STA UWI."))
+    clubs.append(Club(clubName="UWI Law Society", clubDescription="The University of the West Indies Law Society provides a forum for members to discuss prevalent issues that plague the judicial systems across the globe."))
+    clubs.append(Club(clubName="UWI Charity and Outreach Society", clubDescription="The University of the West Indies Law Society's Charity and Outreach Committee devotes to ensuring each student has an extraordinary and memorable university volunteer experience."))
+
+    for club in clubs:
+        try:
+            db.session.add(club)
+            db.session.commit()
+        except:
+            db.session.rollback()
+            print("Club already exists in database!")
+        
     print('Database Initialized!')
 
 # serve command
