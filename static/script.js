@@ -1,5 +1,5 @@
-const server = "https://electora.herokuapp.com"
-//const server = "http://localhost:8080"
+//const server = "https://electora.herokuapp.com"
+const server = "http://localhost:8080"
 console.log(server)
 let username
 
@@ -123,10 +123,10 @@ async function determineSessionContext(){
     } else {
         logoutButton.innerText = ""
         navbarLinks.innerHTML = `<li class="nav-item">
-                                    <a class="nav-link" id="navLink1" href="#" data-toggle="modal" data-target="#loginModal">Login</a>
+                                    <a class="nav-link text-info" id="navLink1" href="#" data-toggle="modal" data-target="#loginModal">Login</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="navLink2" href="#" data-toggle="modal" data-target="#signUpModal">Register</a>
+                                    <a class="nav-link text-info" id="navLink2" href="#" data-toggle="modal" data-target="#signUpModal">Register</a>
                                 </li>`
     }
     
@@ -141,9 +141,9 @@ async function displayClubs(clubs){
                               <div class="card bg-secondary" style="width: 100%;">
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
-                                  <h5 class="card-title">${club["clubName"]}</h5>
+                                  <h5 class="card-title text-info">${club["clubName"]}</h5>
                                   <p class="card-text">${club["clubDescription"]}</p>
-                                  <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-primary">Join Club</a>
+                                  <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-info">Join Club</a>
                                 </div>
                               </div>
                             </div> `
@@ -566,7 +566,7 @@ async function displayElectionsManager(){
     
     let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
 
-    if(!window.localStorage.getItem("access_token")){
+    if('error' in myClubs){
       optionList.innerHTML=""
       updateToastContent("Host Elections", `Not logged in!`)
 
@@ -576,7 +576,7 @@ async function displayElectionsManager(){
         <h5>Not logged in!</h5>
         <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
       </div>`
-    }else if(myClubs==[]){
+    }else if(myClubs.length == 0){
         optionList.innerHTML=""
         let noClubs=document.querySelector('#hostElectionContentArea')
         noClubs.innerHTML=
@@ -595,12 +595,12 @@ async function displayElectionsManager(){
             </div>
     `
     optionList.innerHTML=`
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="closeElection()">Close Election</button>
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
-      <button type="button" class="btn btn-outline-primary btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="closeElection()">Close Election</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
+      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
       `
     }
 }
@@ -658,12 +658,14 @@ async function addCandidateToExisting(){
     `
 
     let electionOptions=document.querySelector("#electionInput")
-
-    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+    
+    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    console.log(electionss)
+    let elections = electionss
         for(election of elections){
             if(election){
-                if(election[0]['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                if(election['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
                 }
             }
         }
