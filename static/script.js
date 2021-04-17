@@ -138,7 +138,7 @@ async function displayClubs(clubs){
     if(clubs.length > 0){  
         for(club of clubs){
             listOfClubs += `<div class="col-sm-6 mt-3">
-                              <div class="card" style="width: 100%;">
+                              <div class="card bg-secondary" style="width: 100%;">
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
                                   <h5 class="card-title">${club["clubName"]}</h5>
@@ -570,13 +570,15 @@ async function displayElectionsManager(){
 
     if(!window.localStorage.getItem("access_token")){
       optionList.innerHTML=""
+      updateToastContent("Host Elections", `Not logged in!`)
+
       let noLogin=document.querySelector('#hostElectionContentArea')
       noLogin.innerHTML=
       `<div class="col-sm-12 mt-3 text-center">
         <h5>Not logged in!</h5>
         <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
       </div>`
-    }else if(myClubs={}){
+    }else if(myClubs==[]){
         optionList.innerHTML=""
         let noClubs=document.querySelector('#hostElectionContentArea')
         noClubs.innerHTML=
@@ -660,12 +662,13 @@ async function addCandidateToExisting(){
     let electionOptions=document.querySelector("#electionInput")
 
     let elections = await sendRequest(`${server}/api/myElections`, "GET")
-
-    for(election of elections){
-        if(election[0]['isOpen'] == true){
-            electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+        for(election of elections){
+            if(election){
+                if(election[0]['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                }
+            }
         }
-    }
 
     document.forms["AddCandidateChooseElection"].addEventListener("submit", async function(event){
         event.preventDefault()
@@ -730,11 +733,14 @@ async function deleteElection(){
     `
     let electionOptions=document.querySelector("#electionInput")
 
-    let elections = await sendRequest(`${server}/api/elections`, "GET")
-
-    for(election of elections){
-        electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
-    }
+    let elections = await sendRequest(`${server}/api/myElections`, "GET")
+        for(election of elections){
+            if(election){
+                if(election[0]['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                }
+            }
+        }
     document.forms["deleteElectionForm"].addEventListener("submit", async function(event){
         event.preventDefault()
         let form = event.target.elements
@@ -761,15 +767,13 @@ async function removeCandidate(){
     let electionOptions=document.querySelector("#electionInput")
 
     let elections = await sendRequest(`${server}/api/myElections`, "GET")
-
-    console.log(elections)
-
-    for(election of elections){
-
-        if(election[0]['isOpen'] == true){
-            electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+        for(election of elections){
+            if(election){
+                if(election[0]['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                }
+            }
         }
-    }
 
     document.forms["removeCandidateChooseElection"].addEventListener("submit", async function(event){
         event.preventDefault()
@@ -824,12 +828,13 @@ async function updateCandidate(){
     let electionOptions=document.querySelector("#electionInput")
 
     let elections = await sendRequest(`${server}/api/myElections`, "GET")
-
-    for(election of elections){
-        if(election[0]['isOpen'] == true){
-            electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+        for(election of elections){
+            if(election){
+                if(election[0]['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                }
+            }
         }
-    }
 
     document.forms["updateCandidateChooseElection"].addEventListener("submit", async function(event){
         event.preventDefault()
@@ -898,12 +903,13 @@ async function closeElection(){
     let electionOptions=document.querySelector("#electionInput")
 
     let elections = await sendRequest(`${server}/api/myElections`, "GET")
-
-    for(election of elections){
-        if(election[0]['isOpen'] == true){
-            electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+        for(election of elections){
+            if(election){
+                if(election[0]['isOpen'] == true){
+                    electionOptions.innerHTML+=`<option value="${election[0]['electionID']}">${election[0]["position"]} ${election[0]["clubName"]}</option>`
+                }
+            }
         }
-    }
     document.forms["closeElectionForm"].addEventListener("submit", async function(event){
         event.preventDefault()
         let form = event.target.elements
