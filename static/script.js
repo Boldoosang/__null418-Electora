@@ -47,7 +47,6 @@ async function login(event){
     if("error" in result) {
         updateToastContent("Login", `Login failed! ${result["error"]}.`)
     } else {
-        console.log("Logged in successfully!")
         updateToastContent("Login", `Login successful!`)
 
         window.localStorage.setItem('access_token', result['access_token']);
@@ -71,18 +70,14 @@ async function signUp(event){
         "confirmPassword" : fields["confirmPassword"].value
     }
 
-    console.log(data)
-
     form.reset()
 
     let result = await sendRequest(`${server}/register`, "POST", data)
 
     if("error" in result) {
-        console.log("Sign up failed! " + result["error"])
         updateToastContent("Electora Registration", `Sign up failed! ${result["error"]}.`)
     } else {
         updateToastContent("Electora Registration", `${result["message"]}.`)
-        console.log("Signed up successfully!")
     }
     $('#signUpModal').modal('hide')
 }
@@ -97,7 +92,6 @@ function updateToastContent(newToastTitle, newToastContent){
 }
 
 function logout(){
-    console.log("test")
     accessToken = window.localStorage.getItem("access_token");
     if(accessToken){
         window.localStorage.removeItem('access_token');
@@ -152,7 +146,7 @@ async function displayClubs(clubs){
         clubDisplayArea.innerHTML = listOfClubs
         
     } else {
-        console.log("No clubs")
+        updateToastContent("Clubs", "No clubs have been added yet!")
     }
 }
 
@@ -178,7 +172,6 @@ async function getAllClubs(){
 
 
 async function displayMyClubs(myClubs){
-    //console.log(myClubs)
     myClubsArea = document.querySelector("#myClubsDisplayArea")
     let listOfClubs = ""
     if(myClubs.length > 0){
@@ -258,7 +251,7 @@ async function displayMyActiveElections(myElections){
                 } else
                     continue
                 for(candidate of clubElection.candidates)
-                    listOfCandidates += `<div class="card mt-3 bg-dark col-lg-5">
+                    listOfCandidates += `<div class="card mt-3 bg-dark col-lg-5 mx-3">
                                             <div class="row d-flex align-items-center">
                                                 <div class="d-flex align-items-center col-xs-2 h-75 w-25">
                                                     <input class="h-100 w-75 ml-3 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
@@ -327,8 +320,6 @@ async function getAllMyActiveElections(){
         </div> `
     } else {
         let elections = await sendRequest(`${server}/api/elections`, "GET")
-        console.log("test")
-        console.log(elections)
         displayMyActiveElections(elections)
     }
 }
@@ -393,16 +384,6 @@ async function displayMyPastElectionsDetails(clubID){
     let closedCount = 0;
     let listOfElections = ""
 
-    /*
-    if(myPastElections != null){
-        myPastElections.filter(function (el) {
-            return el != null;
-        });
-        if(myPastElections[0] == null)
-        myPastElections = null
-    }
-    */
-
     if((myPastElections != null)) {
         if(myPastElections.length > 0){
             myPastElections.reverse()
@@ -426,7 +407,7 @@ async function displayMyPastElectionsDetails(clubID){
                         else
                             cardColor = "bg-danger"
                         
-                        listOfCandidates += `<div class="card mt-3 col-lg-5 ${cardColor}">
+                        listOfCandidates += `<div class="card mt-3 col-lg-5 mx-3 ${cardColor}">
                                                 <div class="card-body col-sm-12">
                                                     <h5 class="card-title">${candidate["firstName"]} ${candidate["lastName"]}</h5>
                                                     <p class="card-text">${candidate["finalNumVotes"]} total votes</p>
@@ -579,8 +560,8 @@ async function displayElectionsManager(){
         let noClubs=document.querySelector('#hostElectionContentArea')
         noClubs.innerHTML=
         `<div class="col-sm-12 mt-3 text-center">
-          <h5>No Clubs!!</h5>
-          <p>Sorry, but you need to be a member of a club to manage a club.</p>
+          <h5>No Clubs</h5>
+          <p>Sorry, but you need to be a member of a club to manage an election.</p>
         </div>`
     }else{
     content.innerHTML=`
@@ -759,8 +740,6 @@ async function removeCandidate(){
     let electionOptions=document.querySelector("#electionInput")
 
     let elections = await sendRequest(`${server}/api/myElections`, "GET")
-
-    console.log(elections)
 
     for(election of elections){
 
