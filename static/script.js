@@ -1,6 +1,3 @@
-//const server = "https://electora.herokuapp.com"
-const server = "http://localhost:8080"
-console.log(server)
 let username
 
 async function sendRequest(url, method, data){
@@ -42,7 +39,7 @@ async function login(event){
 
     form.reset()
 
-    let result = await sendRequest(`${server}/auth`, "POST", data)
+    let result = await sendRequest(`/auth`, "POST", data)
 
     if("error" in result) {
         updateToastContent("Login", `Login failed! ${result["error"]}.`)
@@ -50,7 +47,7 @@ async function login(event){
         updateToastContent("Login", `Login successful!`)
 
         window.localStorage.setItem('access_token', result['access_token']);
-        window.location = `${server}`
+        window.location = `/`
     } 
     determineSessionContext()
     $('#loginModal').modal('hide')
@@ -72,7 +69,7 @@ async function signUp(event){
 
     form.reset()
 
-    let result = await sendRequest(`${server}/register`, "POST", data)
+    let result = await sendRequest(`/register`, "POST", data)
 
     if("error" in result) {
         updateToastContent("Electora Registration", `Sign up failed! ${result["error"]}.`)
@@ -100,15 +97,15 @@ function logout(){
         updateToastContent("Logout", "You were not logged in!")
     }
     determineSessionContext()
-    window.location = `${server}`
+    window.location = `/`
 }
 
 async function determineSessionContext(){
-    identification = await sendRequest(`${server}/identify`, "GET")
+    identification = await sendRequest(`/identify`, "GET")
     let logoutButton = document.querySelector("#logoutButton")
     console.log(identification)
     if(!("error" in identification)){
-        username = await sendRequest(`${server}/identify`, "GET")
+        username = await sendRequest(`/identify`, "GET")
         logoutButton.innerText = "Logout"
         navbarLinks.innerHTML = `
                                 <li class="nav-item">
@@ -152,7 +149,7 @@ async function displayClubs(clubs){
 
 
 async function getAllClubs(){
-    let clubs = await sendRequest(`${server}/api/clubs`, "GET")
+    let clubs = await sendRequest(`/api/clubs`, "GET")
 
     let clubDisplayArea = document.querySelector("#clubDisplayArea")
 
@@ -201,7 +198,7 @@ async function displayMyClubs(myClubs){
 }
 
 async function getAllMyClubs(){
-    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    let myClubs = await sendRequest(`/api/myClubs`, "GET")
     let myClubsArea = document.querySelector("#myClubsDisplayArea")
     try {
         if ("error" in myClubs){
@@ -309,7 +306,7 @@ async function displayMyActiveElections(myElections){
 //Does not show appropriate message for closed elections
 async function getAllMyActiveElections(){
     
-    identification = await sendRequest(`${server}/identify`, "GET")
+    identification = await sendRequest(`/identify`, "GET")
 
     if("error" in identification){
         updateToastContent("View Active Elections", `Not logged in!`)
@@ -320,14 +317,14 @@ async function getAllMyActiveElections(){
             <p>Sorry, but you need to be logged in to view the active elections.</p>
         </div> `
     } else {
-        let elections = await sendRequest(`${server}/api/elections`, "GET")
+        let elections = await sendRequest(`/api/elections`, "GET")
         displayMyActiveElections(elections)
     }
 }
 
 
 async function getMyPastElections(){
-    identification = await sendRequest(`${server}/identify`, "GET")
+    identification = await sendRequest(`/identify`, "GET")
     let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
     if("error" in identification){
         updateToastContent("Past Elections", `Not logged in!`)
@@ -337,7 +334,7 @@ async function getMyPastElections(){
             <p>Sorry, but you need to be logged in to view the past elections of your clubs.</p>
         </div> `
     } else {
-        let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+        let myClubs = await sendRequest(`/api/myClubs`, "GET")
         pastElectionsArea.innerHTML = ` 
         
             <div class="container row d-flex justify-content-center mt-3">
@@ -381,7 +378,7 @@ async function displayMyPastElectionsMenu(myClubs){
 var graphCandidates = []
 async function displayMyPastElectionsDetails(clubID){
     let pastElectionDisplayArea = document.querySelector("#pastElectionDisplayArea")
-    let myPastElections = await sendRequest(`${server}/api/elections`, "GET")
+    let myPastElections = await sendRequest(`/api/elections`, "GET")
     let closedCount = 0;
     let listOfElections = ""
 
@@ -484,7 +481,7 @@ function electionPieChart(graphCandidates){
   async function displayMyPastElections(clubID){
     let pastElections= document.querySelector('#clubPastElections')
     pastElections.innerHTML=""
-    let elections = await sendRequest(`${server}/api/clubs/${clubID}/getPastElections`, "GET")
+    let elections = await sendRequest(`/api/clubs/${clubID}/getPastElections`, "GET")
     
     for(election of elections){
       pastElections.innerHTML+=
@@ -503,7 +500,7 @@ function electionPieChart(graphCandidates){
   }
 
 async function joinClub(clubID){
-    let response = await sendRequest(`${server}/api/clubs/${clubID}`, "POST")
+    let response = await sendRequest(`/api/clubs/${clubID}`, "POST")
     if ("error" in response){
         updateToastContent("Join Club", `${response["error"]}`)
     } else {
@@ -524,7 +521,7 @@ async function castVote(event, electionID){
 
     let candidateID = checkedElement
 
-    let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "POST")
+    let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "POST")
     if ("error" in response){
         updateToastContent("Vote for Candidate", `${response["error"]}`)
     } else {
@@ -534,7 +531,7 @@ async function castVote(event, electionID){
 }
 
 async function leaveClub(clubID){
-    let response = await sendRequest(`${server}/api/myClubs/${clubID}`, "DELETE")
+    let response = await sendRequest(`/api/myClubs/${clubID}`, "DELETE")
     if ("error" in response){
         updateToastContent("Leave Club", `${response["error"]}`)
     } else {
@@ -547,7 +544,7 @@ async function displayElectionsManager(){
     let optionList=document.querySelector('#electionOptions')
     let content=document.querySelector('#electionContent')
     
-    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    let myClubs = await sendRequest(`/api/myClubs`, "GET")
 
     if('error' in myClubs){
       optionList.innerHTML=""
@@ -621,7 +618,7 @@ async function displayAddElection(){
     let clubOptions=document.querySelector("#clubInput")
     clubOptions.innerHTML= "<option selected>Choose...</option>"
 
-    let myClubs = await sendRequest(`${server}/api/myClubs`, "GET")
+    let myClubs = await sendRequest(`/api/myClubs`, "GET")
     for(club of myClubs){
       clubOptions.innerHTML+=`<option class="text-white" value="${club['clubID']}">${club["clubName"]}</option>`
     }
@@ -644,7 +641,7 @@ async function addCandidateToExisting(){
 
     let electionOptions=document.querySelector("#electionInput")
     
-    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`/api/myElections`, "GET")
     console.log(electionss)
     let elections = electionss
         for(election of elections){
@@ -661,7 +658,7 @@ async function addCandidateToExisting(){
 
         electionID = form['electionInput'].value
 
-        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
+        let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
 
         let newForm = document.querySelector("#electionContent")
 
@@ -689,7 +686,7 @@ async function addCandidateToExisting(){
                 firstName: form['fnameInput'].value,
                 lastName: form['lnameInput'].value
             }
-            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "POST", data)
+            let response = await sendRequest(`/api/elections/${electionID}/candidates`, "POST", data)
             event.target.reset()
             if('error' in response)
                 updateToastContent("Add Candidate", "Candidate could not be added")
@@ -714,7 +711,7 @@ async function deleteElection(){
     `
     let electionOptions=document.querySelector("#electionInput")
 
-    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`/api/myElections`, "GET")
     console.log(electionss)
     let elections = electionss
         for(election of elections){
@@ -730,7 +727,7 @@ async function deleteElection(){
 
         let electionID = form['electionInput'].value
         
-        let response = await sendRequest(`${server}/api/elections/${electionID}`, "DELETE")
+        let response = await sendRequest(`/api/elections/${electionID}`, "DELETE")
         event.target.reset()
         })
 }
@@ -750,7 +747,7 @@ async function removeCandidate(){
 
     let electionOptions=document.querySelector("#electionInput")
 
-    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`/api/myElections`, "GET")
     console.log(electionss)
     let elections = electionss
         for(election of elections){
@@ -767,7 +764,7 @@ async function removeCandidate(){
 
         electionID = form['electionInput'].value
 
-        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
+        let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
 
         let newForm = document.querySelector("#electionContent")
 
@@ -793,7 +790,7 @@ async function removeCandidate(){
 
             let candidateID = form['candidateInput'].value
 
-            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
+            let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
             
             removeCandidate()
 
@@ -821,7 +818,7 @@ async function updateCandidate(){
 
     let electionOptions=document.querySelector("#electionInput")
 
-    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`/api/myElections`, "GET")
     console.log(electionss)
     let elections = electionss
         for(election of elections){
@@ -880,7 +877,7 @@ async function updateCandidate(){
                 lastName: form['lnameInput'].value
             }
 
-            let response = await sendRequest(`${server}/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
+            let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
             event.target.reset()
         })
     })
@@ -899,7 +896,7 @@ async function closeElection(){
     `
     let electionOptions=document.querySelector("#electionInput")
 
-    let electionss = await sendRequest(`${server}/api/myElections`, "GET")
+    let electionss = await sendRequest(`/api/myElections`, "GET")
     console.log(electionss)
     let elections = electionss
         for(election of elections){
@@ -919,7 +916,7 @@ async function closeElection(){
             "isOpen" : false
         }
 
-        let response = await sendRequest(`${server}/api/elections/${clubID}`, "PUT", data)
+        let response = await sendRequest(`/api/elections/${clubID}`, "PUT", data)
         form.reset()
         })
         
@@ -975,7 +972,7 @@ async function createElection(event){
       candidates: cnames
     }
 
-    let response = await sendRequest(`${server}/api/elections`, "POST", data)
+    let response = await sendRequest(`/api/elections`, "POST", data)
     event.target.reset()
   }
 
