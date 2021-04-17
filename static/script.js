@@ -1,5 +1,5 @@
-const server = "https://electora.herokuapp.com"
-//const server = "http://localhost:8080"
+//const server = "https://electora.herokuapp.com"
+const server = "http://localhost:8080"
 console.log(server)
 let username
 
@@ -190,6 +190,7 @@ async function displayMyClubs(myClubs){
         
         myClubsArea.innerHTML = listOfClubs
     } else {
+        updateToastContent("No Clubs Joined",'You have not joined a club yet')
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center">
             <h5>No Joined Clubs</h5>
