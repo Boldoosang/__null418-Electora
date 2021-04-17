@@ -5,3 +5,4 @@ config.py
 electoraDB.db
 .theia
 .vscode
+static/server.js
