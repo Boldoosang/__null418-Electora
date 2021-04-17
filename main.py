@@ -16,7 +16,7 @@ def get_db_uri(scheme='sqlite://', user='', password='', host='//electoraDB.db',
 
 def loadConfig(app):
   try:
-      app.config.from_object('config.production')
+      app.config.from_object('config.development')
   except:
       print("No config file used. Using environment variables.")
       DBUSER = os.environ.get("DBUSER")
