@@ -1,5 +1,5 @@
-const server = "https://electora.herokuapp.com"
-//const server = "http://localhost:8080"
+//const server = "https://electora.herokuapp.com"
+const server = "http://localhost:8080"
 console.log(server)
 let username
 
@@ -8,10 +8,10 @@ async function sendRequest(url, method, data){
         let token = window.localStorage.getItem('access_token')
 
         let options = {
-            "method" : method,
-            "headers" : {
-            "Content-Type" : "application/json",
-            "Authorization" : `JWT ${token}`
+                "method" : method,
+                "headers" : {
+                "Content-Type" : "application/json",
+                "Authorization" : `JWT ${token}`
             }
         }
 
@@ -106,13 +106,13 @@ function logout(){
 async function determineSessionContext(){
     identification = await sendRequest(`${server}/identify`, "GET")
     let logoutButton = document.querySelector("#logoutButton")
-
+    console.log(identification)
     if(!("error" in identification)){
         username = await sendRequest(`${server}/identify`, "GET")
         logoutButton.innerText = "Logout"
         navbarLinks.innerHTML = `
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#">Logged in as ${identification.username}!</a>
+                                    <a class="nav-link" href="#">Logged in as <b>${identification.username}</b>!</a>
                                 </li>`
     } else {
         logoutButton.innerText = ""
@@ -131,7 +131,7 @@ async function displayClubs(clubs){
     let listOfClubs = ""
     if(clubs.length > 0){  
         for(club of clubs){
-            listOfClubs += `<div class="col-sm-6 mt-3">
+            listOfClubs += `<div class="col-md-6 mt-3">
                               <div class="card bg-secondary" style="width: 100%;">
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
