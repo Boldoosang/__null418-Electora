@@ -568,11 +568,13 @@ async function displayElectionsManager(){
           <p>Sorry, but you need to be a member of a club to manage an election.</p>
         </div>`
     }else{
+        noLogin.innerHTML=""
+        noClubs.innerHTML=""
     content.innerHTML=`
     <div class="container row d-flex justify-content-center mt-3">
                     <div class="col-sm-12 mt-3 text-center">
-                        <h5>Select an Option</h5>
-                        <p>Select an option to manage elections.</p>
+                        <h5 class="text-white">Select an Option</h5>
+                        <p class="text-white">Select an option to manage elections.</p>
                 </div>
 
             </div>
