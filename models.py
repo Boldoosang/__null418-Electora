@@ -107,7 +107,6 @@ class User(db.Model):
 
         return listOfMyClubs
 
-
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
     clubDescription = db.Column(db.String(300), nullable = False, default="This group does not have a description.")

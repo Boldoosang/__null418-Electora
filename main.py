@@ -253,12 +253,12 @@ def createElection():
     if not validateCandidate(candidate):
       return json.dumps({"error" : "Invalid candidate information provided!"})
 
-  clubMembership = db.session.query(ClubMember).filter_by(clubID=clubID, id=current_identity.id).first()
+  clubMembership = db.session.query(ClubMember).filter_by(clubID=electionDetails["clubID"], id=current_identity.id).first()
         
   if not clubMembership:
     return json.dumps({"error" : "You are not a member of this club!"})
 
-  response = membership.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
+  response = clubMembership.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
 
   if response:
     return json.dumps({"message" : "Election started!"})
@@ -275,6 +275,11 @@ def updateElection(electionID):
   
   if "isOpen" in updateDetails:
     if updateDetails["isOpen"] == True:
+      electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+
+      if not electionClub:
+          return json.dumps({"error" : "No election found!"})
+
       membership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=current_identity.id).first()
 
       if not membership:
@@ -293,14 +298,15 @@ def updateElection(electionID):
         return json.dumps({"error" : "You do not have permission to open this election!"})
 
     if updateDetails["isOpen"] == False:
+      electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
+
+      if not electionClub:
+        return json.dumps({"error" : "No election found!"})
+
       membership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=current_identity.id).first()
         
       if not membership:
         return json.dumps({"error" : "User is not a member of this club!"})
-
-      electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-      if not electionClub:
-        return json.dumps({"error" : "No election found!"})
 
       result = membership.closeElection(electionID)
 
@@ -328,8 +334,13 @@ def deleteElection(electionID):
   if not electionID:
     return json.dumps({"error" : "Not election ID provided!"})
   
-  membership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=current_identity.id).first()
+  electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
 
+  if not electionClub:
+    return json.dumps({"error" : "No election found!"})
+    
+  membership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=current_identity.id).first()
+  
   if not membership:
     return json.dumps({"error" : "User is not a member of this club!"})
 
@@ -350,7 +361,17 @@ def deleteElection(electionID):
 @app.route('/api/myManagingElections', methods=["GET"])
 @jwt_required()
 def getMyManagingElections():
-  myElections = current_identity.myManagingElections()
+  memberships = db.session.query(ClubMember).filter_by(id=current_identity.id).all()
+
+  allMyManagingElections = []
+
+  for membership in memberships:
+    listOfMyClubElections = membership.myManagingElections()
+    if listOfMyClubElections:
+      for clubElection in listOfMyClubElections:
+        allMyManagingElections.append(clubElection)
+
+  myElections = membership.myManagingElections()
 
   if myElections:
     return json.dumps(myElections)
@@ -415,6 +436,11 @@ def updateCandidate(electionID, candidateID):
 @app.route('/api/elections/<electionID>/candidates', methods=["GET"])
 @jwt_required()
 def getCandidatesDetails(electionID):
+  election = db.session.query(Election).filter_by(electionID=electionID).first()
+
+  if not election:
+    return json.dumps({"error" : "Election does not exist!"})
+
   clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=current_identity.id).first()
 
   if not clubMembership:
