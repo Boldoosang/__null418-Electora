@@ -210,13 +210,24 @@ def voteForCandidate(electionID, candidateID):
   else:
     return json.dumps({"error" : "Unable to cast vote!"})
 
+
+def validateCandidate(candidate):
+  if "firstName" in candidate and "lastName" in candidate:
+    if len(candidate["firstName"]) > 0 and len(candidate["lastName"]) > 0:
+      return True
+  return False
+
 @app.route('/api/elections', methods=["POST"])
 @jwt_required()
 def createElection():
   electionDetails = request.get_json()
 
-  if not electionDetails or not electionDetails["clubID"] or not electionDetails["position"] or not electionDetails["candidates"]:
+  if not electionDetails or "clubID" not in electionDetails or "position" not in electionDetails or "candidates" not in electionDetails:
     return json.dumps({"error" : "Not enough information provided!"})
+
+  for candidate in electionDetails["candidates"]:
+    if not validateCandidate(candidate):
+      return json.dumps({"error" : "Invalid candidate information provided!"})
 
   response = current_identity.callElection(electionDetails["clubID"], electionDetails["position"], electionDetails["candidates"])
 
@@ -272,6 +283,7 @@ def deleteElection(electionID):
 @jwt_required()
 def getMyManagingElections():
   myElections = current_identity.myManagingElections()
+
   if myElections:
     return json.dumps(myElections)
   else:
@@ -300,15 +312,13 @@ def displayMyManagingElection(electionID):
 def updateCandidateDetails(electionID, candidateID):
   updateDetails = request.get_json()
 
-  newDetails = {}
+  if "firstName" not in updateDetails and "lastName" not in updateDetails:
+    return json.dumps({"error" : "Incorrect candidate details provided!"})
 
-  if "firstName" in updateDetails and "lastName" in updateDetails:
-    newDetails = {
-      "firstName": updateDetails["firstName"],
-      "lastName" : updateDetails["lastName"]
-    }
+  if not validateCandidate(updateDetails):
+    return json.dumps({"error" : "Incorrect candidate details provided!"})
   
-  if current_identity.updateCandidateDetails(electionID, candidateID, newDetails):
+  if current_identity.updateCandidateDetails(electionID, candidateID, updateDetails):
     return json.dumps({"message" : "Candidate details updated!"})
   else:
     return json.dumps({"error" : "Unable to update candidate!"})
@@ -317,7 +327,8 @@ def updateCandidateDetails(electionID, candidateID):
 @jwt_required()
 def getCandidatesDetails(electionID):
   candidatesDetails = current_identity.getElectionCandidatesDetails(electionID)
-  if candidateDetails:
+
+  if candidatesDetails:
     return json.dumps(candidatesDetails)
   else:
     return json.dumps({"error" : "No candidates found for this election."})
@@ -336,20 +347,19 @@ def getCandidateDetails(electionID, candidateID):
 def addCandidate(electionID):
   candidateDetails = request.get_json()
 
-  newDetails = {}
-
   if "firstName" in candidateDetails and "lastName" in candidateDetails:
-    newDetails = {
-      "firstName": candidateDetails["firstName"],
-      "lastName" : candidateDetails["lastName"]
-    }
+    if not validateCandidate(candidateDetails):
+      return json.dumps({"error" : "Not enough information provided!"})
+  else:
+    return json.dumps({"error" : "Not enough information provided!"})
+  
 
-  result = current_identity.addCandidate(electionID, newDetails)
+  result = current_identity.addCandidate(electionID, candidateDetails)
 
   if result:
     return json.dumps({"message" : "Candidate has been added to election!"})
   else:
-    return json.dumps({"error" : "Unable to add candidate to election!"})
+    return json.dumps({"error" : "Unable to add candidate to election! Candidate may already exist!"})
 
 @app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["DELETE"])
 @jwt_required()

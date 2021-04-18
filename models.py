@@ -77,8 +77,9 @@ class User(db.Model):
 
         for membership in memberships:
             listOfMyClubElections = membership.myManagingElections()
-            for clubElection in listOfMyClubElections:
-                allMyManagingElections.append(clubElection)
+            if listOfMyClubElections:
+                for clubElection in listOfMyClubElections:
+                    allMyManagingElections.append(clubElection)
 
         return allMyManagingElections
 
@@ -641,6 +642,19 @@ class ClubMember(db.Model):
             candidate = db.session.query(Candidate).filter_by(electionID=electionID, candidateID=candidateID).first()
             db.session.delete(candidate)
             db.session.commit()
+
+            elecCandidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
+            print(elecCandidates)
+            print("test")
+            if not elecCandidates:
+                try:
+                    db.session.delete(election)
+                    db.session.commit()
+                    print("Since there are no more candidates, deleting election!")
+                except:
+                    db.session.rollback()
+                    print("Failed to delete election with no candidates!")
+
             print("Candidate deleted from election!")
         except:
             db.session.rollback()
@@ -650,10 +664,10 @@ class ClubMember(db.Model):
         return True
 
     def deleteElection(self, electionID):
-        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID).first()
+        election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID, isOpen=False).first()
 
         if not election:
-            print("No election found in your managing elections!")
+            print("No closed election found in your managing elections!")
             return False
         
         try:

@@ -103,13 +103,12 @@ function logout(){
 async function determineSessionContext(){
     identification = await sendRequest(`/identify`, "GET")
     let logoutButton = document.querySelector("#logoutButton")
-    console.log(identification)
     if(!("error" in identification)){
         username = await sendRequest(`/identify`, "GET")
         logoutButton.innerText = "Logout"
         navbarLinks.innerHTML = `
                                 <li class="nav-item">
-                                    <a class="nav-link text-info" href="#">Logged in as <b>${identification.username}</b>!</a>
+                                    <a class="nav-link text-info" href="#">Logged in as <b class="text-white">${identification.username}</b>!</a>
                                 </li>`
     } else {
         logoutButton.innerText = ""
@@ -218,16 +217,6 @@ async function displayMyActiveElections(myElections){
     activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
     let listOfElections = ""
     let openElections = 0
-
-    /*
-    if(myElections != null){
-        myElections.filter(function (el) {
-            return el != null;
-        });
-        if(myElections[0] == null)
-            myElections = null
-    }
-    */
 
     if((myElections != null)) {
         if(myElections.length > 0){
@@ -350,9 +339,9 @@ async function displayMyPastElectionsMenu(myClubs){
     let listOfClubs = ""
 
     if(myClubs != null && myClubs.length > 0){
-        for(myClub of myClubs){
+        for(myClub of myClubs)
             listOfClubs += ` <a role="tab" data-toggle="pill"  value="${myClub["clubID"]}" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})"  class="peClubList nav-link text-info" href="#">${myClub["clubName"]}</a>`
-        }   
+        
         pastElectionClubList.innerHTML = listOfClubs
     } else {
         let pastElectionsArea = document.querySelector("#pastElectionsDisplayArea")
@@ -530,85 +519,62 @@ async function leaveClub(clubID){
     getAllMyClubs()
 }
 
-/*
-async function getAllMyActiveElections(){
-    
-    identification = await sendRequest(`/identify`, "GET")
+async function displayElectionsManager(){
+    let hostElectionsArea = document.querySelector('#manageElectionDisplayArea')
 
+    identification = await sendRequest(`/identify`, "GET")
+    
     if("error" in identification){
-        updateToastContent("View Active Elections", `Not logged in!`)
-        activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
-        activeElectionsArea.innerHTML = 
+      updateToastContent("Host Elections", `Not logged in!`)
+      hostElectionsArea.innerHTML =
         `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>Not logged in!</h5>
-            <p>Sorry, but you need to be logged in to view the active elections.</p>
-        </div> `
-    } else {
-        let elections = await sendRequest(`/api/elections`, "GET")
-        displayMyActiveElections(elections)
-    }
-}
-*/
-
-
-async function displayElectionsManager(){
-    let optionList = document.querySelector('#electionOptions')
-    let content = document.querySelector('#electionContent')
-    let noLogin = document.querySelector('#hostElectionContentArea')
-    let noClubs = document.querySelector('#hostElectionContentArea')
-
-    identification = await sendRequest(`/identify`, "GET")
-    
-    if("error" in identification){
-      optionList.innerHTML=""
-      updateToastContent("Host Elections", `Not logged in!`)
-
-      noLogin.innerHTML =
-      `<div class="col-sm-12 mt-3 text-center text-white">
-        <h5>Not logged in!</h5>
-        <p>Sorry, but you need to be logged in to manage elections of your clubs.</p>
-      </div>`
+            <p>Sorry, but you need to be logged in to manage elections of your clubs.</p>
+        </div>`
 
     } else {
         let myClubs = await sendRequest(`/api/myClubs`, "GET")
 
         if("error" in myClubs){
-            content.innerHTML=""
-            optionList.innerHTML=""
-            noClubs.innerHTML=
+
+            hostElectionsArea.innerHTML=
             `<div class="col-sm-12 mt-3 text-center text-white">
-            <h5>No Clubs</h5>
-            <p>Sorry, but you need to be a member of a club to manage an election.</p>
+                <h5>No Clubs</h5>
+                <p>Sorry, but you need to be a member of a club to manage an election.</p>
             </div>`
         } else {
-            noLogin.innerHTML=""
-            noClubs.innerHTML=""
-            content.innerHTML=`
-            <div class="container row d-flex justify-content-center mt-3">
-                            <div class="col-sm-12 mt-3 text-center">
-                                <h5 class="text-white">Select an Option</h5>
-                                <p class="text-white">Select an option to manage elections.</p>
-                        </div>
+            hostElectionsArea.innerHTML=` 
+                                        <div class="col-lg-4">
+                                            <div class="nav flex-column p-3 mt-3" id="electionMenuList" role="tablist"></div>
+                                        </div>
+                                        <div id="electionContent" class="col-lg-8 row d-flex justify-content-center mt-3">
+                                            <div class="col-sm-12 mt-3 text-center">
+                                                <h5 class="text-white">Select an Option</h5>
+                                                <p class="text-white">Select an option to manage elections.</p>
+                                            </div>
+                                        </div>
+                                        `
+            optionList = document.querySelector("#electionMenuList")
 
-                    </div>
-            `
             optionList.innerHTML=`
             <button type="button" class="btn btn-outline-info btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
-            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
             <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="closeElection()">Close Election</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="openElection()">Open Election</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
             <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
             <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
-            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
+            
             `
         }
     }
 }
 
 async function displayAddElection(){
-    let content=document.querySelector('#electionContent')
-    content.innerHTML=
+    let content = document.querySelector('#electionContent')
+    content.innerHTML =
     `
-    <form id="createElectionForm">
+    <form id="createElectionForm" class="w-100">
       <div class="form-group">
         <label for="clubInput" class="text-white">Choose Club</label>
         <select class="form-control" id="clubInput"></select>
@@ -623,7 +589,7 @@ async function displayAddElection(){
         <div class="form-group" id="candidate" >
           <label for="nameInput" class="text-white">Candidate Name</label>
           <input type="text" class="form-control" placeholder="First Name">
-          <input type="text" class="form-control" placeholder="Last Name">
+          <input type="text" class="form-control mt-3" placeholder="Last Name">
         </div>
       </div>
 
@@ -636,307 +602,517 @@ async function displayAddElection(){
     clubOptions.innerHTML= "<option selected>Choose...</option>"
 
     let myClubs = await sendRequest(`/api/myClubs`, "GET")
-    for(club of myClubs){
-      clubOptions.innerHTML+=`<option class="text-white" value="${club['clubID']}">${club["clubName"]}</option>`
-    }
+    if ("error" in myClubs){
+        content.innerHTML = `
+                            <div class="col-sm-12 mt-3 text-center text-white">
+                                <h5>No Clubs</h5>
+                                <p>Sorry, but you need to be a member of a club to manage an election.</p>
+                            </div>
+                            `
+    } else {
+        for(club of myClubs)
+            clubOptions.innerHTML+=`<option class="text-white" value="${club['clubID']}">${club["clubName"]}</option>`
 
-    document.forms["createElectionForm"].addEventListener("submit", createElection)
+        document.forms["createElectionForm"].addEventListener("submit", createElection)
+    }
 }
 
 async function addCandidateToExisting(){
     let content=document.querySelector('#electionContent')
-
-    content.innerHTML=`
-    <form id="AddCandidateChooseElection">
-      <div class="form-group">
-      <label for="electionInput" class="text-white">Choose Election</label>
-      <select class="form-control" id="electionInput"></select>
-      </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
-    </form>
-    `
-
-    let electionOptions=document.querySelector("#electionInput")
     
-    let electionss = await sendRequest(`/api/myElections`, "GET")
-    console.log(electionss)
-    let elections = electionss
-        for(election of elections){
-            if(election){
-                if(election['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
-                }
-            }
-        }
+    let elections = await sendRequest(`/api/myElections`, "GET")
 
-    document.forms["AddCandidateChooseElection"].addEventListener("submit", async function(event){
-        event.preventDefault()
-        let form = event.target.elements
+    if("error" in elections){
+        content.innerHTML = `
+        <div class="col-sm-12 mt-3 text-center text-white">
+            <h5>No Active Elections</h5>
+            <p>Sorry, but you need to be a manager of an active election to add a candidate.</p>
+        </div>
+        `
+    } else {
+        let activeCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == true)
+                    activeCount++
 
-        electionID = form['electionInput'].value
-
-        let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
-
-        let newForm = document.querySelector("#electionContent")
-
-        newForm.innerHTML+=`
-            <form id="AddCandidateChoose">
-                <div class="form-group" id="newFname">
-                    <label for="fnameInput">New First Name</label>
-                    <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
-                </div>
-
-                <div class="form-group" id="newLname">
-                    <label for="lnameInput">New Last Name</label>
-                    <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
-                </div>
-                <button id="candidateSubmit" type="submit" class="btn btn-primary">Add Candidate</button>
+        if(activeCount > 0){
+            content.innerHTML=`
+            <form id="AddCandidateChooseElection" class="w-100">
+                <div class="form-group">
+                    <label for="electionInput" class="text-white">Choose Election for Adding Candidate</label>
+                    <select class="form-control" id="electionInput"></select>
+                </div> 
+                <button id="electionSubmit" class="btn btn-info">Select Election</button>
             </form>
             `
+            let electionOptions = document.querySelector("#electionInput")
 
-        event.target.reset() 
-        document.forms["AddCandidateChoose"].addEventListener("submit", async function(event){
-            event.preventDefault()
-            let form = event.target.elements
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == true)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+                
+ 
+            document.forms["AddCandidateChooseElection"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
+        
+                electionID = form['electionInput'].value
+        
+                let newForm = document.querySelector("#electionContent")
+        
+                newForm.innerHTML+=`
+                    <form id="AddCandidateChoose" class="w-100">
+                        <div class="form-group text-white" id="newFname">
+                            <label for="fnameInput">New First Name</label>
+                            <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
+                        </div>
+        
+                        <div class="form-group text-white" id="newLname">
+                            <label for="lnameInput">New Last Name</label>
+                            <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
+                        </div>
+                        <button id="candidateSubmit" type="submit" class="btn btn-primary">Add Candidate</button>
+                    </form>
+                    `
+        
+                event.target.reset() 
 
-            let data = {
-                firstName: form['fnameInput'].value,
-                lastName: form['lnameInput'].value
-            }
-            let response = await sendRequest(`/api/elections/${electionID}/candidates`, "POST", data)
-            event.target.reset()
-            if('error' in response)
-                updateToastContent("Add Candidate", "Candidate could not be added")
-            else{ 
-                updateToastContent("Add Candidate", "Candidate was successfully added")
-            }
-        }) 
-    })
+                document.forms["AddCandidateChoose"].addEventListener("submit", async function(event){
+                    event.preventDefault()
+                    let form = event.target.elements
+        
+                    let data = {
+                        firstName: form['fnameInput'].value,
+                        lastName: form['lnameInput'].value
+                    }
+                    let response = await sendRequest(`/api/elections/${electionID}/candidates`, "POST", data)
+                    event.target.reset()
+                    if('error' in response)
+                        updateToastContent("Add Candidate", response["error"])
+                    else{ 
+                        updateToastContent("Add Candidate", "Candidate was successfully added!")
+                    }
+                }) 
+            })
+        } else {
+            content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Active Elections</h5>
+                <p>Sorry, but you need to be a manager of an active election to add a candidate.</p>
+            </div>
+            `
+        }
+    }
 }
+
 
 async function deleteElection(){
     let content=document.querySelector('#electionContent')
-    let html=""
-    content.innerHTML=`
-    <form id="deleteElectionForm">
-      <div class="form-group">
-        <label for="electionInput" class="text-white">Choose Election</label>
-        <select class="form-control" id="electionInput"></select>
-      </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-info">Delete Election</button>
-    </form>
-    `
-    let electionOptions=document.querySelector("#electionInput")
+    
+    let elections = await sendRequest(`/api/myElections`, "GET")
 
-    let electionss = await sendRequest(`/api/myElections`, "GET")
-    console.log(electionss)
-    let elections = electionss
-        for(election of elections){
-            if(election){
-                if(election['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+    if("error" in elections){
+        content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Closed Elections</h5>
+                <p>Sorry, but you need to be a manager of a closed election to delete an election.</p>
+            </div>
+            `
+    } else {
+        let closedCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == false)
+                    closedCount++
+
+        if(closedCount > 0){
+            content.innerHTML = `
+            <form id="deleteElectionForm" class="w-100">
+            <div class="form-group">
+                <label for="electionInput" class="text-white">Choose Election</label>
+                <select class="form-control" id="electionInput"></select>
+            </div> 
+            <button id="electionSubmit" type="submit" class="btn btn-danger">Delete Election</button>
+            </form>
+            `
+            let electionOptions = document.querySelector("#electionInput")
+
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == false)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+                
+            document.forms["deleteElectionForm"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
+
+                let electionID = form['electionInput'].value
+                
+                let response = await sendRequest(`/api/elections/${electionID}`, "DELETE")
+                event.target.reset()
+
+                if("error" in response){
+                    updateToastContent("Delete Election", `${response["error"]}`)
+                } else {
+                    updateToastContent("Delete Election", `Election deleted successfully!`)
                 }
-            }
+            })
+        } else {
+                content.innerHTML = `
+                <div class="col-sm-12 mt-3 text-center text-white">
+                    <h5>No Closed Elections</h5>
+                    <p>Sorry, but you need to be a manager of a closed election to delete an election.</p>
+                </div>
+                `
         }
-    document.forms["deleteElectionForm"].addEventListener("submit", async function(event){
-        event.preventDefault()
-        let form = event.target.elements
-
-        let electionID = form['electionInput'].value
-        
-        let response = await sendRequest(`/api/elections/${electionID}`, "DELETE")
-        event.target.reset()
-        })
+    }
 }
+
 
 async function removeCandidate(){
     let content=document.querySelector('#electionContent')
+    
+    let elections = await sendRequest(`/api/myElections`, "GET")
 
-    content.innerHTML=`
-    <form id="removeCandidateChooseElection">
-      <div class="form-group">
-      <label for="electionInput" class="text-white">Choose Election</label>
-      <select class="form-control" id="electionInput"></select>
-      </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
-    </form>
-    `
+    if("error" in elections){
+        content.innerHTML = `
+        <div class="col-sm-12 mt-3 text-center text-white">
+            <h5>No Active Elections</h5>
+            <p>Sorry, but you need to be a manager of an active election to remove a candidate.</p>
+        </div>
+        `
+    } else {
+        let activeCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == true)
+                    activeCount++
 
-    let electionOptions=document.querySelector("#electionInput")
-
-    let electionss = await sendRequest(`/api/myElections`, "GET")
-    console.log(electionss)
-    let elections = electionss
-        for(election of elections){
-            if(election){
-                if(election['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
-                }
-            }
-        }
-
-    document.forms["removeCandidateChooseElection"].addEventListener("submit", async function(event){
-        event.preventDefault()
-        let form = event.target.elements
-
-        electionID = form['electionInput'].value
-
-        let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
-
-        let newForm = document.querySelector("#electionContent")
-
-        newForm.innerHTML+=`
-            <form id="removeCandidateChoose">
+        if(activeCount > 0){
+            content.innerHTML=`
+                <form id="removeCandidateChooseElection" class="w-100">
                 <div class="form-group">
-                    <label for="candidateInput">Choose Candidate</label>
-                    <select class="form-control" id="candidateInput"></select>
+                <label for="electionInput" class="text-white">Choose Election for Removing Candidate</label>
+                <select class="form-control" id="electionInput"></select>
                 </div> 
-                <button id="candidateSubmit" type="submit" class="btn btn-primary">Remove Candidate</button>
-            </form>
-            `
+                <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
+                </form>
+                `
+
+            let electionOptions = document.querySelector("#electionInput")
+
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == true)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+       
+
+            document.forms["removeCandidateChooseElection"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
         
-        let candidateOptions=document.querySelector("#candidateInput")
-
-        for(candidate of candidates){
-                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+                electionID = form['electionInput'].value
+        
+                let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
+                
+                let newForm = document.querySelector("#electionContent")
+                if("error" in candidates){
+                    newForm.innerHTML = `
+                            <div class="col-sm-12 mt-3 text-center text-white">
+                                <h5>No Candidates</h5>
+                                <p>Sorry, but there are no candidates for this election.</p>
+                            </div>`
+                } else {
+                    newForm.innerHTML+=`
+                        <form id="removeCandidateChoose" class="w-100">
+                            <div class="form-group text-white">
+                                <label for="candidateInput">Choose Candidate</label>
+                                <select class="form-control" id="candidateInput"></select>
+                            </div> 
+                            <button id="candidateSubmit" type="submit" class="btn btn-primary">Remove Candidate</button>
+                        </form>
+                        `
+                    
+                    let candidateOptions=document.querySelector("#candidateInput")
+        
+                    for(candidate of candidates)
+                        candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+                    
+        
+                    document.forms["removeCandidateChoose"].addEventListener("submit", async function(event){
+                        event.preventDefault()
+                        let form = event.target.elements
+        
+                        let candidateID = form['candidateInput'].value
+        
+                        let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
+                        
+                        removeCandidate()
+        
+                        if('error' in response)
+                            updateToastContent("Remove Candidate", `${response["error"]}`)
+                        else{ 
+                            updateToastContent("Remove Candidate", "Candidate was successfully removed!")
+                        }
+                    })
+                }
+            })
+        } else {
+            content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Active Elections</h5>
+                <p>Sorry, but you need to be a manager of an active election to remove a candidate.</p>
+            </div>
+            `
         }
-
-        document.forms["removeCandidateChoose"].addEventListener("submit", async function(event){
-            event.preventDefault()
-            let form = event.target.elements
-
-            let candidateID = form['candidateInput'].value
-
-            let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "DELETE")
-            
-            removeCandidate()
-
-            if('error' in response)
-                updateToastContent("Remove Candidate", "Candidate could not be removed")
-            else{ 
-                updateToastContent("Remove Candidate", "Candidate was successfully removed")
-            }
-        })
-    })  
+    } 
 }
+
 
 async function updateCandidate(){
     let content=document.querySelector('#electionContent')
+    
+    let elections = await sendRequest(`/api/myElections`, "GET")
 
-    content.innerHTML=`
-    <form id="updateCandidateChooseElection">
-      <div class="form-group">
-      <label for="electionInput" class="text-white">Choose Election</label>
-      <select class="form-control" id="electionInput"></select>
-      </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
-    </form>
-    `
+    if("error" in elections){
+        content.innerHTML = `
+        <div class="col-sm-12 mt-3 text-center text-white">
+            <h5>No Active Elections</h5>
+            <p>Sorry, but you need to be a manager of an active election to update a candidate.</p>
+        </div>
+        `
+    } else {
+        let activeCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == true)
+                    activeCount++
 
-    let electionOptions=document.querySelector("#electionInput")
-
-    let electionss = await sendRequest(`/api/myElections`, "GET")
-    console.log(electionss)
-    let elections = electionss
-        for(election of elections){
-            if(election){
-                if(election['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
-                }
-            }
-        }
-
-    document.forms["updateCandidateChooseElection"].addEventListener("submit", async function(event){
-        event.preventDefault()
-        let form = event.target.elements
-
-        electionID = form['electionInput'].value
-
-
-        let candidates = await sendRequest(`${server}/api/elections/${electionID}/candidates`, "GET")
-
-        let newForm = document.querySelector("#electionContent")
-
-        newForm.innerHTML+=`
-            <form id="updateCandidateChoose">
+        if(activeCount > 0){
+            content.innerHTML=`
+                <form id="updateCandidateChooseElection" class="w-100">
                 <div class="form-group">
-                    <label for="candidateInput">Choose Candidate</label>
-                    <select class="form-control" id="candidateInput"></select>
-                </div>
+                <label for="electionInput" class="text-white">Choose Election</label>
+                <select class="form-control" id="electionInput"></select>
+                </div> 
+                <button id="electionSubmit" type="submit" class="btn btn-info">Select Election</button>
+                </form>
+                `
 
-                <div class="form-group" id="newFname">
-                    <label for="fnameInput">New First Name</label>
-                    <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
-                </div>
+            let electionOptions=document.querySelector("#electionInput")
 
-                <div class="form-group" id="newLname">
-                    <label for="lnameInput">New Last Name</label>
-                    <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
-                </div>
-                <button id="candidateSubmit" type="submit" class="btn btn-primary">Update Candidate</button>
-            </form>
-            `
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == true)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+            
+            document.forms["updateCandidateChooseElection"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
+    
+                electionID = form['electionInput'].value
+    
+    
+                let candidates = await sendRequest(`/api/elections/${electionID}/candidates`, "GET")
+                let newForm = document.querySelector("#electionContent")
+
+                if("error" in candidates){
+                    newForm.innerHTML = `
+                            <div class="col-sm-12 mt-3 text-center text-white">
+                                <h5>No Candidates</h5>
+                                <p>Sorry, but there are no candidates for this election.</p>
+                            </div>`
+                } else {
+                    newForm.innerHTML+=`
+                        <form id="updateCandidateChoose" class="w-100">
+                            <div class="form-group">
+                                <label for="candidateInput">Choose Candidate</label>
+                                <select class="form-control" id="candidateInput"></select>
+                            </div>
         
-        let candidateOptions=document.querySelector("#candidateInput")
+                            <div class="form-group" id="newFname">
+                                <label for="fnameInput">New First Name</label>
+                                <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
+                            </div>
+        
+                            <div class="form-group" id="newLname">
+                                <label for="lnameInput">New Last Name</label>
+                                <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
+                            </div>
+                            <button id="candidateSubmit" type="submit" class="btn btn-primary">Update Candidate</button>
+                        </form>
+                        `
 
-        for(candidate of candidates){
-                candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+                    let candidateOptions=document.querySelector("#candidateInput")
+    
+                    for(candidate of candidates)
+                        candidateOptions.innerHTML+=`<option value="${candidate['candidateID']}">${candidate['firstName']} ${candidate['lastName']}</option>`
+
+                    document.forms["updateCandidateChoose"].addEventListener("submit", async function(event){
+                        event.preventDefault()
+                        let form = event.target.elements
+        
+                        let candidateID = form['candidateInput'].value
+        
+                        let data = {
+                            firstName: form['fnameInput'].value,
+                            lastName: form['lnameInput'].value
+                        }
+        
+                        let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
+                        event.target.reset()
+
+                        if('error' in response)
+                            updateToastContent("Update Candidate", `${response["error"]}`)
+                        else 
+                            updateToastContent("Update Candidate", "Candidate was successfully updated!")
+                    })
+                }
+            })
+
+        } else {
+            content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Active Elections</h5>
+                <p>Sorry, but you need to be a manager of an active election to update a candidate.</p>
+            </div>
+            `
         }
-
-        document.forms["updateCandidateChoose"].addEventListener("submit", async function(event){
-            event.preventDefault()
-            let form = event.target.elements
-
-            let candidateID = form['candidateInput'].value
-
-            let data = {
-                firstName: form['fnameInput'].value,
-                lastName: form['lnameInput'].value
-            }
-
-            let response = await sendRequest(`/api/elections/${electionID}/candidates/${candidateID}`, "PUT", data)
-            event.target.reset()
-        })
-    })
+    }
 }
 
+
+
 async function closeElection(){
-    let content=document.querySelector('#electionContent')
-    content.innerHTML=`
-    <form id="closeElectionForm">
-      <div class="form-group">
-        <label for="electionInput" class="text-white">Choose Election</label>
-        <select class="form-control" id="electionInput"></select>
-      </div> 
-      <button id="electionSubmit" type="submit" class="btn btn-info">Close Election</button>
-    </form>
-    `
-    let electionOptions=document.querySelector("#electionInput")
+    let content = document.querySelector('#electionContent')
+    
+    let elections = await sendRequest(`/api/myElections`, "GET")
+    if("error" in elections){
+        content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Active Elections</h5>
+                <p>Sorry, but you need to be a manager of an election to close an election.</p>
+            </div>
+            `
+    } else {
+        let activeCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == true)
+                    activeCount++
 
-    let electionss = await sendRequest(`/api/myElections`, "GET")
-    console.log(electionss)
-    let elections = electionss
-        for(election of elections){
-            if(election){
-                if(election['isOpen'] == true){
-                    electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+        if(activeCount > 0){
+            content.innerHTML = `
+            <form id="closeElectionForm" class="w-100">
+            <div class="form-group">
+                <label for="electionInput" class="text-white">Choose Election</label>
+                <select class="form-control" id="electionInput"></select>
+            </div> 
+            <button id="electionSubmit" type="submit" class="btn btn-danger">Close Election</button>
+            </form>
+            `
+            let electionOptions = document.querySelector("#electionInput")
+
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == true)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+                
+            document.forms["closeElectionForm"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
+
+                electionID = form['electionInput'].value
+
+                data = {
+                    "isOpen" : false
                 }
-            }
+
+                let response = await sendRequest(`/api/elections/${electionID}`, "PUT", data)
+                event.target.reset()
+
+                if("error" in response){
+                    updateToastContent("Close Election", `${response["error"]}`)
+                } else {
+                    updateToastContent("Close Election", `Election closed successfully!`)
+                }
+            })
+        } else {
+                content.innerHTML = `
+                <div class="col-sm-12 mt-3 text-center text-white">
+                    <h5>No Active Elections</h5>
+                    <p>Sorry, but you need to be a manager of an election to close an election.</p>
+                </div>
+                `
         }
-    document.forms["closeElectionForm"].addEventListener("submit", async function(event){
-        event.preventDefault()
-        let form = event.target.elements
+    }
+}
 
-        clubID = form['electionInput'].value
+async function openElection(){
+    let content = document.querySelector('#electionContent')
+    
+    let elections = await sendRequest(`/api/myElections`, "GET")
+    if("error" in elections){
+        content.innerHTML = `
+            <div class="col-sm-12 mt-3 text-center text-white">
+                <h5>No Closed Elections</h5>
+                <p>Sorry, but you need to be a manager of an election to open an election.</p>
+            </div>
+            `
+    } else {
+        let closedCount = 0
+        for(election of elections)
+            if(election)
+                if(election['isOpen'] == false)
+                    closedCount++
 
-        data = {
-            "isOpen" : false
+        if(closedCount > 0){
+            content.innerHTML = `
+            <form id="openElectionForm" class="w-100">
+            <div class="form-group">
+                <label for="electionInput" class="text-white">Choose Election</label>
+                <select class="form-control" id="electionInput"></select>
+            </div> 
+            <button id="electionSubmit" type="submit" class="btn btn-success">Open Election</button>
+            </form>
+            `
+            let electionOptions = document.querySelector("#electionInput")
+
+            for(election of elections)
+                if(election)
+                    if(election['isOpen'] == false)
+                        electionOptions.innerHTML+=`<option value="${election['electionID']}">${election["position"]} ${election["clubName"]}</option>`
+                
+            document.forms["openElectionForm"].addEventListener("submit", async function(event){
+                event.preventDefault()
+                let form = event.target.elements
+
+                electionID = form['electionInput'].value
+
+                data = {
+                    "isOpen" : true
+                }
+
+                let response = await sendRequest(`/api/elections/${electionID}`, "PUT", data)
+                event.target.reset()
+
+                if("error" in response){
+                    updateToastContent("Open Election", `${response["error"]}`)
+                } else {
+                    updateToastContent("Close Election", `Election opened successfully!`)
+                }
+            })
+        } else {
+                content.innerHTML = `
+                <div class="col-sm-12 mt-3 text-center text-white">
+                    <h5>No Closed Elections</h5>
+                    <p>Sorry, but you need to be a manager of an election to open an election.</p>
+                </div>
+                `
         }
-
-        let response = await sendRequest(`/api/elections/${clubID}`, "PUT", data)
-        form.reset()
-        })
-        
+    }
 }
 
 async function addCandidate(){
@@ -945,9 +1121,9 @@ async function addCandidate(){
     content.innerHTML+=
     `
         <div class="form-group" id="candidate">
-          <label for="nameInput">Candidate Name</label>
+        <label for="nameInput" class="text-white">Candidate Name</label>
           <input type="text" class="form-control" placeholder="First Name">
-          <input type="text" class="form-control" placeholder="Last Name">
+          <input type="text" class="form-control mt-3" placeholder="Last Name">
         </div>
     `
 }
@@ -991,7 +1167,13 @@ async function createElection(event){
 
     let response = await sendRequest(`/api/elections`, "POST", data)
     event.target.reset()
-  }
+
+    if("error" in response){
+        updateToastContent("Add Election", `${response["error"]}`)
+    } else {
+        updateToastContent("Add Election", "Election successfully added!")
+    }
+}
 
 function main(){
     document.forms["signUpForm"].addEventListener("submit", signUp)
@@ -999,7 +1181,7 @@ function main(){
     document.querySelector("#club-tab").addEventListener("click", getAllClubs)
     document.querySelector("#myClubs-tab").addEventListener("click", getAllMyClubs)
     document.querySelector("#activeElections-tab").addEventListener("click", getAllMyActiveElections)
-    document.querySelector("#hostElection-tab").addEventListener("click", displayElectionsManager)
+    document.querySelector("#manageElections-tab").addEventListener("click", displayElectionsManager)
     document.querySelector("#pastElections-tab").addEventListener("click", getMyPastElections)
     let logoutButton = document.querySelector("#logoutButton")
     logoutButton.addEventListener("click", logout)
