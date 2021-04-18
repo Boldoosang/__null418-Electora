@@ -187,42 +187,29 @@ async function displayMyClubs(myClubs){
         
         myClubsArea.innerHTML = listOfClubs
     } else {
-        updateToastContent("No Joined Clubs", `Sorry, but you are not a member of any club.`)
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center text-white">
             <h5>No Joined Clubs</h5>
             <p>Sorry, but you are not a member of any club. You can join a club via the 'Clubs' tab.</p>
         </div> `
     }
-
 }
 
+
 async function getAllMyClubs(){
-    let myClubs = await sendRequest(`/api/myClubs`, "GET")
     let myClubsArea = document.querySelector("#myClubsDisplayArea")
     identification = await sendRequest(`/identify`, "GET")
-    
 
-    
-    try {
-        if ("error" in myClubs){
-            updateToastContent("View My Clubs", `Not logged in!`)
-            myClubsArea.innerHTML = 
-            `<div class="col-sm-12 mt-3 text-center text-white">
-                <h5>Not logged in!</h5>
-                <p>Sorry, but you need to be logged in to view your clubs.</p>
-            </div> `
-        } else {
-            displayMyClubs(myClubs)
-        }
-    } catch(e){
-        //Error generated when there are no clubs
-        updateToastContent("View My Clubs", `No clubs yet!`)
+    if ("error" in identification){
+        updateToastContent("View My Clubs", `Not logged in!`)
         myClubsArea.innerHTML = 
         `<div class="col-sm-12 mt-3 text-center text-white">
-            <h5>No clubs have been created!</h5>
-            <p>Sorry, but there hasn't been any clubs added to this application.</p>
+            <h5>Not logged in!</h5>
+            <p>Sorry, but you need to be logged in to view your clubs.</p>
         </div> `
+    } else {
+        let myClubs = await sendRequest(`/api/myClubs`, "GET")
+        displayMyClubs(myClubs)
     }
 }
 
@@ -543,56 +530,77 @@ async function leaveClub(clubID){
     getAllMyClubs()
 }
 
-async function displayElectionsManager(){
-    let optionList=document.querySelector('#electionOptions')
-    let content=document.querySelector('#electionContent')
-    let noLogin=document.querySelector('#hostElectionContentArea')
-    let noClubs=document.querySelector('#hostElectionContentArea')
+/*
+async function getAllMyActiveElections(){
     
-    let myClubs = await sendRequest(`/api/myClubs`, "GET")
     identification = await sendRequest(`/identify`, "GET")
 
-    console.log(myClubs)
-    
+    if("error" in identification){
+        updateToastContent("View Active Elections", `Not logged in!`)
+        activeElectionsArea = document.querySelector("#activeElectionsDisplayArea")
+        activeElectionsArea.innerHTML = 
+        `<div class="col-sm-12 mt-3 text-center text-white">
+            <h5>Not logged in!</h5>
+            <p>Sorry, but you need to be logged in to view the active elections.</p>
+        </div> `
+    } else {
+        let elections = await sendRequest(`/api/elections`, "GET")
+        displayMyActiveElections(elections)
+    }
+}
+*/
 
+
+async function displayElectionsManager(){
+    let optionList = document.querySelector('#electionOptions')
+    let content = document.querySelector('#electionContent')
+    let noLogin = document.querySelector('#hostElectionContentArea')
+    let noClubs = document.querySelector('#hostElectionContentArea')
+
+    identification = await sendRequest(`/identify`, "GET")
+    
     if("error" in identification){
       optionList.innerHTML=""
       updateToastContent("Host Elections", `Not logged in!`)
 
-      noLogin.innerHTML=
+      noLogin.innerHTML =
       `<div class="col-sm-12 mt-3 text-center text-white">
         <h5>Not logged in!</h5>
         <p>Sorry, but you need to be logged in to manage elections of your clubs.</p>
       </div>`
 
-    }else if("error" in myClubs){
-        content.innerHTML=""
-        optionList.innerHTML=""
-        noClubs.innerHTML=
-        `<div class="col-sm-12 mt-3 text-center text-white">
-          <h5>No Clubs</h5>
-          <p>Sorry, but you need to be a member of a club to manage an election.</p>
-        </div>`
-    }else{
-        noLogin.innerHTML=""
-        noClubs.innerHTML=""
-        content.innerHTML=`
-    <div class="container row d-flex justify-content-center mt-3">
-                    <div class="col-sm-12 mt-3 text-center">
-                        <h5 class="text-white">Select an Option</h5>
-                        <p class="text-white">Select an option to manage elections.</p>
-                </div>
+    } else {
+        let myClubs = await sendRequest(`/api/myClubs`, "GET")
 
-            </div>
-    `
-    optionList.innerHTML=`
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="closeElection()">Close Election</button>
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
-      <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
-      `
+        if("error" in myClubs){
+            content.innerHTML=""
+            optionList.innerHTML=""
+            noClubs.innerHTML=
+            `<div class="col-sm-12 mt-3 text-center text-white">
+            <h5>No Clubs</h5>
+            <p>Sorry, but you need to be a member of a club to manage an election.</p>
+            </div>`
+        } else {
+            noLogin.innerHTML=""
+            noClubs.innerHTML=""
+            content.innerHTML=`
+            <div class="container row d-flex justify-content-center mt-3">
+                            <div class="col-sm-12 mt-3 text-center">
+                                <h5 class="text-white">Select an Option</h5>
+                                <p class="text-white">Select an option to manage elections.</p>
+                        </div>
+
+                    </div>
+            `
+            optionList.innerHTML=`
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onclick="displayAddElection()">Add Election</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="addCandidateToExisting()">Add Candidate</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="closeElection()">Close Election</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="removeCandidate()">Remove Candidate</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="updateCandidate()">Update Candidate</button>
+            <button type="button" class="btn btn-outline-info btn-lg btn-block" onClick="deleteElection()">Delete Election</button>
+            `
+        }
     }
 }
 
