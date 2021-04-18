@@ -82,9 +82,20 @@ async function signUp(event){
 function updateToastContent(newToastTitle, newToastContent){
     let toastTitle = document.querySelector("#genericToastTitle")
     let toastBody = document.querySelector("#genericToastMessage")
-
+    
     toastTitle.innerHTML = newToastTitle
     toastBody.innerHTML = newToastContent
+    /*
+    let toastAlert = document.querySelector("#toastAlert")
+    toastAlert.innerHTML = `<div class="toast" role="alert" style="position: sticky; bottom: 0; left: 0; min-width: 300px; min-height: 100px; margin-left: 10px; margin-bottom: 10px">
+                                <div class="toast-header">
+                                    <strong id="genericToastTitle" style="min-width: 400px" class="mr-auto">${toastTitle}</strong>
+                                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast"></button>
+                                </div>
+                                <div id="genericToastMessage" class="toast-body">
+                                    ${toastBody}
+                                </div>
+                            </div>`*/
     $('.toast').toast("show")
 }
 
