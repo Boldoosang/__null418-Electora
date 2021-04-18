@@ -219,6 +219,11 @@ def getElectionByID(electionID):
 @app.route('/api/elections/<electionID>/candidates/<candidateID>', methods=["POST"])
 @jwt_required()
 def voteForCandidate(electionID, candidateID):
+  elec = db.session.query(Election).filter_by(electionID=electionID).first()
+
+  if not elec:
+      return json.dumps({"error" : "Election cannot be found!"})
+
   clubMembership = db.session.query(ClubMember).filter_by(clubID=elec.clubID, id=current_identity.id).first()
         
   if not clubMembership:
@@ -229,7 +234,7 @@ def voteForCandidate(electionID, candidateID):
   if not elec:
       return json.dumps({"error" : "Election cannot be found!"})
 
-  if clubMembership.castVote(electionID, candidateID):
+  if clubMembership.castVote(candidateID):
     return json.dumps({"message" : "Vote casted!"})
   else:
     return json.dumps({"error" : "Unable to cast vote!"})
@@ -338,7 +343,7 @@ def deleteElection(electionID):
 
   if not electionClub:
     return json.dumps({"error" : "No election found!"})
-    
+
   membership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=current_identity.id).first()
   
   if not membership:
