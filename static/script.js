@@ -631,7 +631,7 @@ async function displayAddElection(){
 async function addCandidateToExisting(){
     let content=document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
 
     if("error" in elections){
         content.innerHTML = `
@@ -722,7 +722,7 @@ async function addCandidateToExisting(){
 async function deleteElection(){
     let content=document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
 
     if("error" in elections){
         content.innerHTML = `
@@ -785,7 +785,7 @@ async function deleteElection(){
 async function removeCandidate(){
     let content=document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
 
     if("error" in elections){
         content.innerHTML = `
@@ -885,7 +885,7 @@ async function removeCandidate(){
 async function updateCandidate(){
     let content=document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
 
     if("error" in elections){
         content.innerHTML = `
@@ -999,7 +999,7 @@ async function updateCandidate(){
 async function closeElection(){
     let content = document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
     if("error" in elections){
         content.innerHTML = `
             <div class="col-sm-12 mt-3 text-center text-white">
@@ -1064,7 +1064,7 @@ async function closeElection(){
 async function openElection(){
     let content = document.querySelector('#electionContent')
     
-    let elections = await sendRequest(`/api/myElections`, "GET")
+    let elections = await sendRequest(`/api/myManagingElections`, "GET")
     if("error" in elections){
         content.innerHTML = `
             <div class="col-sm-12 mt-3 text-center text-white">
