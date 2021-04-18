@@ -200,6 +200,10 @@ async function displayMyClubs(myClubs){
 async function getAllMyClubs(){
     let myClubs = await sendRequest(`/api/myClubs`, "GET")
     let myClubsArea = document.querySelector("#myClubsDisplayArea")
+    identification = await sendRequest(`/identify`, "GET")
+    
+
+    
     try {
         if ("error" in myClubs){
             updateToastContent("View My Clubs", `Not logged in!`)
@@ -336,7 +340,6 @@ async function getMyPastElections(){
     } else {
         let myClubs = await sendRequest(`/api/myClubs`, "GET")
         pastElectionsArea.innerHTML = ` 
-        
             <div class="container row d-flex justify-content-center mt-3">
                 <div class="col-lg-4">
                     <div class="bg-secondary nav flex-column nav-pills p-3 mt-3" id="pastElectionClubList" role="tablist"></div>
@@ -543,33 +546,41 @@ async function leaveClub(clubID){
 async function displayElectionsManager(){
     let optionList=document.querySelector('#electionOptions')
     let content=document.querySelector('#electionContent')
+    let noLogin=document.querySelector('#hostElectionContentArea')
+    let noClubs=document.querySelector('#hostElectionContentArea')
     
     let myClubs = await sendRequest(`/api/myClubs`, "GET")
+    identification = await sendRequest(`/identify`, "GET")
 
-    if('error' in myClubs){
+    console.log(myClubs)
+    
+
+    if("error" in identification){
       optionList.innerHTML=""
       updateToastContent("Host Elections", `Not logged in!`)
 
-      let noLogin=document.querySelector('#hostElectionContentArea')
       noLogin.innerHTML=
       `<div class="col-sm-12 mt-3 text-center text-white">
         <h5>Not logged in!</h5>
         <p>Sorry, but you need to be logged in to manage elections of your clubs.</p>
       </div>`
-    }else if(myClubs.length == 0){
+
+    }else if("error" in myClubs){
+        content.innerHTML=""
         optionList.innerHTML=""
-        let noClubs=document.querySelector('#hostElectionContentArea')
         noClubs.innerHTML=
         `<div class="col-sm-12 mt-3 text-center text-white">
           <h5>No Clubs</h5>
           <p>Sorry, but you need to be a member of a club to manage an election.</p>
         </div>`
     }else{
-    content.innerHTML=`
+        noLogin.innerHTML=""
+        noClubs.innerHTML=""
+        content.innerHTML=`
     <div class="container row d-flex justify-content-center mt-3">
                     <div class="col-sm-12 mt-3 text-center">
-                        <h5>Select an Option</h5>
-                        <p>Select an option to manage elections.</p>
+                        <h5 class="text-white">Select an Option</h5>
+                        <p class="text-white">Select an option to manage elections.</p>
                 </div>
 
             </div>
