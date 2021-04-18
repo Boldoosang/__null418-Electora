@@ -59,135 +59,6 @@ class User(db.Model):
             print("Unable to add user to club!")
 
         return False
-    
-    def myClubs(self):
-        myClubs = db.session.query(ClubMember).filter_by(id=self.id).all()
-
-        if not myClubs:
-            return None
-        
-        listOfMyClubs = [club.toDict() for club in myClubs]
-
-        return listOfMyClubs
-    
-    def myManagingElections(self):
-        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
-        
-        allMyManagingElections = []
-
-        for membership in memberships:
-            listOfMyClubElections = membership.myManagingElections()
-            if listOfMyClubElections:
-                for clubElection in listOfMyClubElections:
-                    allMyManagingElections.append(clubElection)
-
-        return allMyManagingElections
-
-    def changePosition(self, electionID, position):
-        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
-        
-        if not membership:
-            return False
-
-        return membership.changePosition(electionID, position)
-
-    def addCandidate(self, electionID, candidateDetails):
-        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
-        
-        if not membership:
-            return False
-
-        return membership.addCandidate(electionID, candidateDetails)
-
-    def deleteCandidate(self, electionID, candidateID):
-        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
-        
-        if not membership:
-            return False
-
-        return membership.deleteCandidate(electionID, candidateID)
-
-    def myElections(self):
-        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
-        
-        if not memberships:
-            return None
-
-        allMyElections = []
-
-        for membership in memberships:
-            listOfMyClubElections = membership.myElections()
-
-            if listOfMyClubElections:
-                for clubElection in listOfMyClubElections:
-                    allMyElections.append(clubElection)
-            
-        return allMyElections
-
-    def viewElection(self, electionID):
-        memberships = db.session.query(ClubMember).filter_by(id=self.id).all()
-
-        if not memberships:
-            return None
-
-        election = db.session.query(Election).filter_by(electionID=electionID).first()
-        
-        if not election:
-            return None
-
-
-        for membership in memberships:
-            if election.clubID == membership.clubID:
-                return election.toDict()
-
-        return None
-
-    def getElectionCandidatesDetails(self, electionID):
-        election = db.session.query(Election).filter_by(electionID=electionID).first()
-
-        if not election:
-            print("Election does not eixst!")
-            return None
-
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=self.id).first()
-
-        if not clubMembership:
-            print("User does not have permission to view these candidates!")
-            return None
-        
-        candidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
-
-        return [candidate.toDict() for candidate in candidates]
-
-    def viewCandidate(self, electionID, candidateID):
-        cand = db.session.query(Candidate).filter_by(candidateID=candidateID, electionID=electionID).first()
-
-        if not cand:
-            print("Candidate does not eixst!")
-            return None
-
-        election = db.session.query(Election).filter_by(electionID=electionID).first()
-
-        if not election:
-            print("Election does not exist or may have been deleted!")
-            return None
-
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=election.clubID, id=self.id).first()
-
-        if not election:
-            print("User does not have permission to view this candidate!")
-            return None
-        
-        return cand.toDict()
-
-    def viewMyClubElections(self):
-        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
-        
-        if not membership:
-            return False
-
-        return membership.viewMyClubElections()
-
 
     def leaveClub(self, clubID):
         result = db.session.query(Club).filter_by(clubID=clubID).first()
@@ -226,75 +97,16 @@ class User(db.Model):
 
         return False
 
-    def castVote(self, electionID, candidateID):
-        elec = db.session.query(Election).filter_by(electionID=electionID).first()
-        if not elec:
-            print("Election cannot be found!")
-            return False
+    def myClubs(self):
+        myClubs = db.session.query(ClubMember).filter_by(id=self.id).all()
 
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=elec.clubID, id=self.id).first()
+        if not myClubs:
+            return None
         
-        if not clubMembership:
-            print("User is not a member of this club!")
-            return False
-        
-        return clubMembership.castVote(candidateID)
-    
-    def closeElection(self, electionID):
-        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-        if not electionClub:
-            print("No election found!")
-            return False
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
-        
-        if not clubMembership:
-            print("User is not a member of this club!")
-            return False
-        
-        return clubMembership.closeElection(electionID=electionID)
+        listOfMyClubs = [club.toDict() for club in myClubs]
 
-    def openElection(self, electionID):
-        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-        if not electionClub:
-            print("No election found!")
-            return False
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
-        
-        if not clubMembership:
-            print("User is not a member of this club!")
-            return False
-        
-        return clubMembership.openElection(electionID=electionID)
-    
-    def callElection(self, clubID, position, candidates):
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=clubID, id=self.id).first()
-        
-        if not clubMembership:
-            print("User is not a member of this club!")
-            return False
-        
-        return clubMembership.callElection(clubID, position, candidates)
+        return listOfMyClubs
 
-    def deleteElection(self, electionID):
-        electionClub = db.session.query(Election).filter_by(electionID=electionID).first()
-        if not electionClub:
-            print("No election found!")
-            return False
-        clubMembership = db.session.query(ClubMember).filter_by(clubID=electionClub.clubID, id=self.id).first()
-        
-        if not clubMembership:
-            print("User is not a member of this club!")
-            return False
-        
-        return clubMembership.deleteElection(electionID=electionID)
-
-    def updateCandidateDetails(self, electionID, candidateID, newDetails):
-        membership = db.session.query(ClubMember).filter_by(id=self.id).first()
-        
-        if not membership:
-            return False
-
-        return membership.updateCandidateDetails(electionID, candidateID, newDetails)
 
 class Club(db.Model):
     clubID = db.Column(db.Integer, primary_key=True)
@@ -434,7 +246,7 @@ class ClubMember(db.Model):
     id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     votesMade = db.relationship('ElectionBallot', cascade="all, delete", backref='voter')
     hostedElections = db.relationship('Election', backref='election')
-    
+
     def toDict(self):
         member = db.session.query(User).filter_by(id=self.id).first()
         myClub = db.session.query(Club).filter_by(clubID=self.clubID).first()
@@ -480,7 +292,7 @@ class ClubMember(db.Model):
             print("User may have already voted!")
             return False
 
-    def callElection(self, clubID, position, candidates):#electionEndDate
+    def callElection(self, clubID, position, candidates):
         electionClub = db.session.query(Club).filter_by(clubID=clubID).first()
 
         if not electionClub:
@@ -663,6 +475,17 @@ class ClubMember(db.Model):
         
         return True
 
+    def getElectionCandidatesDetails(self, electionID):
+        election = db.session.query(Election).filter_by(electionID=electionID).first()
+
+        if not election:
+            print("Election does not eixst!")
+            return None
+        
+        candidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
+
+        return [candidate.toDict() for candidate in candidates]
+
     def deleteElection(self, electionID):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID, isOpen=False).first()
 
@@ -682,7 +505,7 @@ class ClubMember(db.Model):
             
             return False
 
-    def updateCandidateDetails(self, electionID, candidateID, newDetails):
+    def updateCandidate(self, electionID, candidateID, newDetails):
         election = db.session.query(Election).filter_by(electionID=electionID, memberID=self.memberID, isOpen=True).first()
 
         if not election:
