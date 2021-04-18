@@ -61,6 +61,14 @@ jwt = JWT(app, authenticate, identity)
 def clientApp():
   return app.send_static_file('app.html')
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('images/favicon.png')
+
+@app.route('/logo.png')
+def logo():
+    return app.send_static_file('images/logo.png')
+
 @app.route('/api/clubs', methods=["GET"])
 def getClubs():
   clubs = db.session.query(Club).all()
