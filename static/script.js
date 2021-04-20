@@ -397,7 +397,7 @@ async function displayMyPastElectionsDetails(clubID){
                         
                         listOfCandidates += `<div class="card mt-3 col-lg-5 mx-3 ${cardColor}">
                                                 <div class="card-body col-sm-12">
-                                                    <h5 class="card-title text-info">${candidate["firstName"]} ${candidate["lastName"]}</h5>
+                                                    <h5 class="card-title text-white">${candidate["firstName"]} ${candidate["lastName"]}</h5>
                                                     <p class="card-text text-white">${candidate["finalNumVotes"]} total votes</p>
                                                 </div>
                                             </div>`
@@ -407,6 +407,7 @@ async function displayMyPastElectionsDetails(clubID){
                     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                     let electionDate = new Date(clubElection["electionEndDate"])
 
+                    
                     electionDate = electionDate.toLocaleDateString("en-TT", options)
                     listOfElections += `<div class="col-sm-12 mt-3">
                                         <div class="card bg-secondary">
@@ -454,6 +455,9 @@ async function displayMyPastElectionsDetails(clubID){
 
 function electionPieChart(graphCandidates){
     let content = document.querySelector("#electionResultPieChart")
+    let children = content.getElementsByTagName('path')
+
+    
     content.innerHTML = ""
 
     var data = []
@@ -466,6 +470,7 @@ function electionPieChart(graphCandidates){
     chart.data(data)
     chart.container('electionResultPieChart')
     chart.draw()
+    children.item(2).style.fill= '#222629'
  }
 
   async function displayMyPastElections(clubID){
@@ -1086,7 +1091,7 @@ async function openElection(){
                 <label for="electionInput" class="text-white">Choose Election</label>
                 <select class="form-control" id="electionInput"></select>
             </div> 
-            <button id="electionSubmit" type="submit" class="btn btn-success">Open Election</button>
+            <button id="electionSubmit" type="submit" class="btn btn-info">Open Election</button>
             </form>
             `
             let electionOptions = document.querySelector("#electionInput")
