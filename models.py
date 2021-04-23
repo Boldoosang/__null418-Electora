@@ -456,8 +456,6 @@ class ClubMember(db.Model):
             db.session.commit()
 
             elecCandidates = db.session.query(Candidate).filter_by(electionID=electionID).all()
-            print(elecCandidates)
-            print("test")
             if not elecCandidates:
                 try:
                     db.session.delete(election)

@@ -34,6 +34,7 @@ def create_app():
   app = Flask(__name__)
   loadConfig(app)
   CORS(app)
+  app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7)
   db.init_app(app)
   return app
 
