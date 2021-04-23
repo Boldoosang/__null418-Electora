@@ -11,11 +11,13 @@ The following is a list of features that are implemented into the developed web 
 * User friendly design
 * Single page design
 
+## POSTMAN COLLECTIONS
+* [Electora Postman Collections](http://electora.justinbaldeo.com/postmanCollection)
+
 ## RESOURCES USED
 * [Bootstrap](https://getbootstrap.com/) - Styling and mobile based navigation
 * [Chart.js](https://www.chartjs.org/) - Generating graphs and pie charts
 * [jQuery](https://jquery.com/) - Script functionality
-
 
 ## CONTRIBUTORS
 * [Boldoosang](https://github.com/Boldoosang/)
