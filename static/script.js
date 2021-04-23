@@ -391,7 +391,7 @@ async function displayMyPastElectionsDetails(clubID){
                         if((candidate.firstName + " " + candidate.lastName) == clubElection.electionWinner)
                             cardColor = "bg-success"
                         else if("Tie" == clubElection.electionWinner)
-                            cardColor = "bg-secondary"
+                            cardColor = "bg-primary"
                         else
                             cardColor = "bg-danger"
                         
