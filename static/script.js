@@ -142,7 +142,7 @@ async function displayClubs(clubs){
                               <div class="card bg-secondary" style="width: 100%;">
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
-                                  <h5 class="card-title text-info">${club["clubName"]}</h5>
+                                  <h5 class="card-title text-info" style="font-family: 'Roboto Condensed', sans-serif;">${club["clubName"]}</h5>
                                   <p class="card-text text-white">${club["clubDescription"]}</p>
                                   <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-info">Join Club</a>
                                 </div>
@@ -187,7 +187,7 @@ async function displayMyClubs(myClubs){
                               <div class="card bg-secondary">
                                 <img class="card-img-top" src="${myClub["clubImage"]}">
                                 <div class="card-body">
-                                  <h5 class="card-title text-info">${myClub["clubName"]}</h5>
+                                  <h5 class="card-title text-info" style="font-family: 'Roboto Condensed', sans-serif;">${myClub["clubName"]}</h5>
                                   <p class="card-text text-white">${myClub["clubDescription"]}</p>
                                   <a href="#" onclick="leaveClub(${myClub["clubID"]})" class="btn btn-info">Leave club</a>
                                 </div>
@@ -240,7 +240,7 @@ async function displayMyActiveElections(myElections){
                 } else
                     continue
                 for(candidate of clubElection.candidates)
-                    listOfCandidates += `<div class="card mt-3 bg-primary col-lg-5 mx-3">
+                    listOfCandidates += `<div class="card mt-3 bg-primary col-lg-5 mx-3" style="font-family: 'Roboto', sans-serif;">
                                             <div class="row d-flex align-items-center">
                                                 <div class="d-flex align-items-center col-xs-2 h-75 w-25">
                                                     <input class="h-100 w-75 ml-3 position-relative" type="radio" name="${clubElection.clubID}" id="candidate-${candidate["candidateID"]}" value="${candidate["candidateID"]}">
@@ -254,7 +254,7 @@ async function displayMyActiveElections(myElections){
                                             </div>
                                         </div>`
 
-                listOfElections += `<div class="col-sm-12 mt-3">
+                listOfElections += `<div class="col-sm-12 mt-3" style="font-family: 'Roboto Condensed', sans-serif;">
                                         <div class="card bg-secondary">
                                             <div class="jumbotron bg-secondary">
                                                 <h1 class="display-4 text-info">${clubElection["position"]}</h1>
@@ -327,7 +327,7 @@ async function getMyPastElections(){
     } else {
         let myClubs = await sendRequest(`/api/myClubs`, "GET")
         pastElectionsArea.innerHTML = ` 
-            <div class="container row d-flex justify-content-center mt-3">
+            <div class="container row d-flex justify-content-center mt-3" style="font-family: 'Roboto', sans-serif;">
                 <div class="col-lg-4">
                     <div class="bg-secondary nav flex-column nav-pills p-3 mt-3" id="pastElectionClubList" role="tablist"></div>
                 </div>
@@ -409,7 +409,7 @@ async function displayMyPastElectionsDetails(clubID){
 
                     
                     electionDate = electionDate.toLocaleDateString("en-TT", options)
-                    listOfElections += `<div class="col-sm-12 mt-3">
+                    listOfElections += `<div class="col-sm-12 mt-3" style="font-family: 'Roboto Condensed', sans-serif;">
                                         <div class="card bg-secondary">
                                             <div class="jumbotron bg-secondary">
                                                 <h1 class= "text-info" style="font-size: 4em;">${clubElection["electionWinner"]}</h1>
@@ -560,7 +560,7 @@ async function displayElectionsManager(){
             </div>`
         } else {
             hostElectionsArea.innerHTML=` 
-                                        <div class="col-lg-4">
+                                        <div class="col-lg-4" style="font-family: 'Roboto Condensed', sans-serif;">
                                             <div class="nav flex-column p-3 mt-3" id="electionMenuList" role="tablist"></div>
                                         </div>
                                         <div id="electionContent" class="col-lg-8 row d-flex justify-content-center mt-3">
