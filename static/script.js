@@ -142,7 +142,7 @@ async function displayClubs(clubs){
                               <div class="card bg-secondary" style="width: 100%;">
                                 <img class="card-img-top" src="${club["clubImage"]}">
                                 <div class="card-body">
-                                  <h5 class="card-title text-info" style="font-family: 'Roboto Condensed', sans-serif;">${club["clubName"]}</h5>
+                                  <h5 class="card-title text-info font-weight-bold" style="font-family: 'Roboto Condensed', sans-serif;">${club["clubName"]}</h5>
                                   <p class="card-text text-white">${club["clubDescription"]}</p>
                                   <a href="#" onclick="joinClub(${club["clubID"]})" class="btn btn-info">Join Club</a>
                                 </div>
@@ -187,7 +187,7 @@ async function displayMyClubs(myClubs){
                               <div class="card bg-secondary">
                                 <img class="card-img-top" src="${myClub["clubImage"]}">
                                 <div class="card-body">
-                                  <h5 class="card-title text-info" style="font-family: 'Roboto Condensed', sans-serif;">${myClub["clubName"]}</h5>
+                                  <h5 class="card-title text-info font-weight-bold" style="font-family: 'Roboto Condensed', sans-serif;">${myClub["clubName"]}</h5>
                                   <p class="card-text text-white">${myClub["clubDescription"]}</p>
                                   <a href="#" onclick="leaveClub(${myClub["clubID"]})" class="btn btn-info">Leave club</a>
                                 </div>
@@ -351,7 +351,7 @@ async function displayMyPastElectionsMenu(myClubs){
 
     if(myClubs != null && myClubs.length > 0){
         for(myClub of myClubs)
-            listOfClubs += ` <a role="tab" data-toggle="pill"  value="${myClub["clubID"]}" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})"  class="peClubList nav-link text-info" href="#">${myClub["clubName"]}</a>`
+            listOfClubs += ` <a role="tab" data-toggle="pill"  value="${myClub["clubID"]}" onclick="displayMyPastElectionsDetails(${myClub["clubID"]})"  class="peClubList nav-link text-info font-weight-bold" href="#">${myClub["clubName"]}</a>`
         
         pastElectionClubList.innerHTML = listOfClubs
     } else {
