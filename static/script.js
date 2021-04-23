@@ -1005,6 +1005,7 @@ async function closeElection(){
     let content = document.querySelector('#electionContent')
     
     let elections = await sendRequest(`/api/myManagingElections`, "GET")
+    console.log(elections);
     if("error" in elections){
         content.innerHTML = `
             <div class="col-sm-12 mt-3 text-center text-white">

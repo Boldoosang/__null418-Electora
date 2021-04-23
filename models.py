@@ -366,6 +366,7 @@ class ClubMember(db.Model):
 
     def myManagingElections(self):
         myElections = db.session.query(Election).filter_by(memberID=self.memberID).all()
+
         if not myElections:
             return None
 

@@ -376,10 +376,8 @@ def getMyManagingElections():
       for clubElection in listOfMyClubElections:
         allMyManagingElections.append(clubElection)
 
-  myElections = membership.myManagingElections()
-
-  if myElections:
-    return json.dumps(myElections)
+  if allMyManagingElections:
+    return json.dumps(allMyManagingElections)
   else:
     return json.dumps({"error" : "No managing elections for your account."})
 
