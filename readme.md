@@ -19,6 +19,12 @@ The following is a list of features that are implemented into the developed web 
 * [Chart.js](https://www.chartjs.org/) - Generating graphs and pie charts
 * [jQuery](https://jquery.com/) - Script functionality
 
+## PROJECT DELIVERABLES
+* [Electora Web Application](https://electora.justinbaldeo.com/)
+* [Project Report](https://electora.justinbaldeo.com/projectReport)
+* [Project Presentation Slides](https://electora.justinbaldeo.com/projectSlides)
+* [Project Presentation Video](https://electora.justinbaldeo.com/projectDemo)
+
 ## CONTRIBUTORS
 * [Boldoosang](https://github.com/Boldoosang/)
 * [TheHuman](https://github.com/tevonthatcher)
