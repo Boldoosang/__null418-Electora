@@ -332,7 +332,7 @@ async function getMyPastElections(){
                     <div class="bg-secondary nav flex-column nav-pills p-3 mt-3" id="pastElectionClubList" role="tablist"></div>
                 </div>
                 <div class="col-lg-8" id="pastElectionDisplayArea">
-                    <div class="col-sm-12 mt-3 text-center">
+                    <div class="col-sm-12 mt-3 text-center text-white">
                         <h5>Select a club</h5>
                         <p>To view the election details of previous elections, please select a club from the menu.</p>
                     </div>
@@ -709,6 +709,7 @@ async function addCandidateToExisting(){
                         updateToastContent("Add Candidate", response["error"])
                     else{ 
                         updateToastContent("Add Candidate", "Candidate was successfully added!")
+                        addCandidateToExisting()
                     }
                 }) 
             })
@@ -773,6 +774,7 @@ async function deleteElection(){
                     updateToastContent("Delete Election", `${response["error"]}`)
                 } else {
                     updateToastContent("Delete Election", `Election deleted successfully!`)
+                    deleteElection()
                 }
             })
         } else {
@@ -871,6 +873,7 @@ async function removeCandidate(){
                             updateToastContent("Remove Candidate", `${response["error"]}`)
                         else{ 
                             updateToastContent("Remove Candidate", "Candidate was successfully removed!")
+                            removeCandidate()
                         }
                     })
                 }
@@ -942,18 +945,18 @@ async function updateCandidate(){
                             </div>`
                 } else {
                     newForm.innerHTML+=`
-                        <form id="updateCandidateChoose" class="w-100">
-                            <div class="form-group">
+                        <form id="updateCandidateChoose" class="w-100 mt-4">
+                            <div class="form-group text-white">
                                 <label for="candidateInput">Choose Candidate</label>
                                 <select class="form-control" id="candidateInput"></select>
                             </div>
         
-                            <div class="form-group" id="newFname">
+                            <div class="form-group text-white" id="newFname">
                                 <label for="fnameInput">New First Name</label>
                                 <input type="text" class="form-control" id="fnameInput" placeholder="First Name">
                             </div>
         
-                            <div class="form-group" id="newLname">
+                            <div class="form-group text-white" id="newLname">
                                 <label for="lnameInput">New Last Name</label>
                                 <input type="text" class="form-control" id="lnameInput" placeholder="Last Name">
                             </div>
@@ -982,8 +985,10 @@ async function updateCandidate(){
 
                         if('error' in response)
                             updateToastContent("Update Candidate", `${response["error"]}`)
-                        else 
+                        else {
                             updateToastContent("Update Candidate", "Candidate was successfully updated!")
+                            updateCandidate()
+                        }
                     })
                 }
             })
@@ -1005,6 +1010,7 @@ async function closeElection(){
     let content = document.querySelector('#electionContent')
     
     let elections = await sendRequest(`/api/myManagingElections`, "GET")
+
     if("error" in elections){
         content.innerHTML = `
             <div class="col-sm-12 mt-3 text-center text-white">
@@ -1053,6 +1059,7 @@ async function closeElection(){
                     updateToastContent("Close Election", `${response["error"]}`)
                 } else {
                     updateToastContent("Close Election", `Election closed successfully!`)
+                    closeElection()
                 }
             })
         } else {
@@ -1118,6 +1125,7 @@ async function openElection(){
                     updateToastContent("Open Election", `${response["error"]}`)
                 } else {
                     updateToastContent("Close Election", `Election opened successfully!`)
+                    openElection()
                 }
             })
         } else {
@@ -1188,6 +1196,7 @@ async function createElection(event){
         updateToastContent("Add Election", `${response["error"]}`)
     } else {
         updateToastContent("Add Election", "Election successfully added!")
+        createElection()
     }
 }
 
