@@ -593,7 +593,7 @@ async function displayAddElection(){
     <form id="createElectionForm" class="w-100">
       <div class="form-group">
         <label for="clubInput" class="text-white">Choose Club</label>
-        <select class="form-control" id="clubInput"></select>
+        <select class="form-control" id="clubInput" required></select>
       </div>
       
       <div class="form-group">
@@ -615,7 +615,6 @@ async function displayAddElection(){
     `
 
     let clubOptions=document.querySelector("#clubInput")
-    clubOptions.innerHTML= "<option selected>Choose...</option>"
 
     let myClubs = await sendRequest(`/api/myClubs`, "GET")
     if ("error" in myClubs){
