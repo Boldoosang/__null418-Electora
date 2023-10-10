@@ -161,7 +161,7 @@ class Election(db.Model):
         electionCandidates = db.session.query(Candidate).filter_by(electionID=self.electionID).all()
 
         if not electionCandidates:
-            printf("No candidates for this election!")
+            print("No candidates for this election!")
             return False
 
         for candidate in electionCandidates:

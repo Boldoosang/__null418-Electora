@@ -1,10 +1,14 @@
 from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 from main import app
 from models import db
 
 manager = Manager(app)
+migrate = Migrate(app, db)
 
 from models import *
+
+manager.add_command('db', MigrateCommand)
 
 # initDB command
 @manager.command
