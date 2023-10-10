@@ -1,20 +1,14 @@
-FROM ubuntu:20.04
+# syntax=docker/dockerfile:1
 
-RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev \
-  && cd /usr/local/bin \
-  && ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+FROM python:3.7
 
-# We copy just the requirements.txt first to leverage Docker cache
-COPY ./requirements.txt /app/requirements.txt
+WORKDIR /
 
-WORKDIR /app
-
-EXPOSE 8080
-
+COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY . /app
+COPY . .
 
-CMD [ "gunicorn", "-b", "0.0.0.0:8080", "wsgi:app"]
+EXPOSE 8080 
+
+CMD [ "python3", "manage.py" , "serve"]
