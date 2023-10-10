@@ -1,8 +1,6 @@
 import json
-from flask_cors import CORS
-from flask_login import LoginManager, current_user, login_user, login_required
 from flask import Flask, request, render_template, redirect, flash, url_for
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, current_user
 from sqlalchemy.exc import IntegrityError
 from datetime import timedelta 
 import os
@@ -33,7 +31,6 @@ def loadConfig(app):
 def create_app():
   app = Flask(__name__)
   loadConfig(app)
-  CORS(app)
   app.config['JWT_EXPIRATION_DELTA'] = timedelta(days = 7)
   db.init_app(app)
   return app
@@ -58,7 +55,16 @@ def identity(payload):
     db.session.rollback()
     return None
 
-jwt = JWT(app, authenticate, identity)
+jwt = JWTManager(app)
+
+# Register a callback function that loades a user from your database whenever
+# a protected route is accessed. This should return any python object on a
+# successful lookup, or None if the lookup failed for any reason (for example
+# if the user has been deleted from the database).
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.query.filter_by(username=identity).one_or_none()
 
 @app.route('/')
 def clientApp():

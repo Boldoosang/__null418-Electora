@@ -7,3 +7,4 @@ electoraDB.db
 .vscode
 static/server.js
 server.js
+venv/
