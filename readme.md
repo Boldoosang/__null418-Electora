@@ -20,7 +20,7 @@ The following is a list of features that are implemented into the developed web 
 * [jQuery](https://jquery.com/) - Script functionality
 
 ## PROJECT DELIVERABLES
-* [Electora Web Application](https://electora.herokuapp.com/)
+* [Electora Web Application](http://electora.justinbaldeo.com/)
 * [Project Report](https://docs.google.com/document/d/1OxHzqF5d0fkf_020tM1On4G5WHAhoZO_8FILzSRdWpk/edit?usp=sharing)
 * [Project Presentation Slides](https://docs.google.com/presentation/d/1VIXCN6OoUWMlxdwFvTLEROtRKyetDy4CZqKM-uPi0Ag/edit?usp=sharing)
 * [Project Presentation Video](https://www.youtube.com/watch?v=ObgipUp8BQ4)
