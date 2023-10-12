@@ -12,7 +12,7 @@ The following is a list of features that are implemented into the developed web 
 * Single page design
 
 ## POSTMAN COLLECTIONS
-* [Electora Postman Collections](http://electora.justinbaldeo.com/postmanCollection)
+* [Electora Postman Collections](https://linktr.ee/null418)
 
 ## RESOURCES USED
 * [Bootstrap](https://getbootstrap.com/) - Styling and mobile based navigation
